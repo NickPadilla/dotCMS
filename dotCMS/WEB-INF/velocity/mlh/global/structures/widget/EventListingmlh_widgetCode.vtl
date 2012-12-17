@@ -1,0 +1,353 @@
+
+############### Variables ##############################################
+## 
+## $host1 - folder or host id where event is stored
+## $eventType - list of "Event Type" selections 
+## $viewMoreLink - "true" or "false"
+## $displayTitle - the header name of the widget
+## $numberOfResults - number of events to return when pulling/querying
+## $show - list of fields to show (values = title, startDate, endDate, description, image)
+##
+## $showMoreEventsDisplay
+## $showMoreEventsLink
+## 
+####################################################################
+
+#################
+## setup query for pull
+#################
+
+#set($query = "+structureName:Eventmlh")
+
+#if($host1 == "SYSTEM_HOST")
+  #set($query = "$query +conhost:SYSTEM_HOST*")
+#elseif($host1 != "")
+  #set($query = "$query +(conFolder:$!{host1} conhost:$!{host1})")
+#end
+
+
+#set($categoryList = "")
+#foreach($id in $eventType)
+  #set($category = $categories.getCategoryByInode("$id"))
+  #if($velocityCount == 1)
+    #set($categoryList = "categories:$category.categoryVelocityVarName")
+  #else
+    #set($categoryList = "$categoryList categories:$category.categoryVelocityVarName")
+  #end
+#end
+#if ($UtilMethods.isSet($categoryList))
+  #set($categoryList = "+(${categoryList})")
+#end
+#set($query="$query $categoryList +live:true")
+  
+#set($query="$query +(Eventmlh.startDate:[$date.format('MM/dd/yyyy',$UtilMethods.now()) 
+ TO $date.format('MM/dd/yyyy',$UtilMethods.addDays($UtilMethods.now(), 366))] OR Eventmlh.endDate:[$date.format('MM/dd/yyyy',$UtilMethods.now()) 
+ TO $date.format('MM/dd/yyyy',$UtilMethods.addDays($UtilMethods.now(), 366))])")
+
+##################
+## Begin Widget Display
+##################
+
+<div class="widget clearfix $!{class}">
+  <h2>$!{displayTitle}</h2>
+  
+  ###################################################
+  ## pull the content and only show what has been specified by the widget
+  ###################################################
+  
+  
+
+  #pullContent($query "$numberOfResults" "$sortBy")
+  
+  #if($!{style} == "homeStyle")
+  
+  <span class="$!{class}">
+  <ul>
+
+  #foreach ($content in $list)
+    <li class="eventListing $!{class}">
+     
+      ####################
+      ## Displays Calendar Icon
+      ####################
+  
+      #if("$!{show.contains('dateCal')}" == "true")
+      <div class="eventDate alpha">
+         <span class="eventMonth">
+             $date.format('MMM', $content.startDate)
+         </span>
+         <span class="eventDay">
+             $date.format('d', $content.startDate)
+         </span>
+      </div>
+  
+      <div class="day clearfix omega">
+      #else
+  
+      <div class="day clearfix">
+      #end
+  
+        #editContentlet($content.inode)
+          
+        #if($UtilMethods.isSet($displayTitle) && "$!{show.contains('title')}" == "true")
+          <h3 class="article_Headline">
+            <a href="/events/$!{content.urlTitle}">$content.title</a>
+          </h3>
+        #end
+    
+        #if("$!{content.imageImageURI}" != "" && "$!{show.contains('image')}" == "true")
+        <div class="eventImg">
+           <img src="/resize_image?path=$!{content.imageImageURI}&maxh=100&maxw=100"></img>
+        </div>
+        #end
+    
+         #if("$!{show.contains('startDate')}" == "true")
+          <div class="startDate">
+            <span class="label">Starts</span>
+            <span class="data">
+    
+        #if("$date.format('ha', $content.startDate)" != "12AM")
+            <strong>$date.format('ha', $content.startDate)</strong>,
+            #end
+            
+        $date.format('EEEE, MMMM d, yyyy', $content.startDate)
+            </span>
+        </div>
+          #end
+        ## Ends Start Date
+      
+        #if("$!{show.contains('endDate')}" == "true")
+          <div class="endDate">
+            <span class="label">Ends</span>
+            <span class="data">
+            
+            #if("$date.format('ha', $content.endDate)" != "12AM")
+            <strong>$date.format('ha', $content.endDate)</strong>,
+            #end
+            
+            $date.format('EEEE, MMMM d, yyyy', $content.endDate)
+            </span>
+          </div>
+          #end
+          ## Ends End Date
+    
+          #if("$!{show.contains('description')}" == "true")
+            <div class="eventDesc">
+              $UtilMethods.shortenString("$content.description", 220)
+            </div>
+          #end
+          ## ends Event Description
+      </div>
+      ## Ends Day Info
+  
+        #if("$!{show.contains('fileLink')}" || "$!{show.contains('formLink')}" || "$!{show.contains('readMore')}" == "true")
+          <div class="eventTools clearfix">
+              <ul class="eventFiles">
+        
+        #if("$!{show.contains('fileLink')}" == "true")
+        <li><a class="fileLink" href="">Brochure</a></li>
+        #end
+        
+        #if("$!{show.contains('formLink')}" == "true")
+        <li><a class="formLink" href="#">Form</a></li>
+        #end
+        
+        </ul>
+
+         #if("$!{show.contains('readMore')}" == "true")
+         <a class="readMore" href="/events/$!{content.urlTitle}">read more >></a>
+         #end
+        
+          </div>
+        #end
+        ## Ends Event Tool Bar 
+        
+        
+    </li>
+    #end
+    ## Ends Event Listing    
+  </ul>
+  </span>
+  #end
+  ## End the Standard Homestyle Style
+  
+  #if($!{style} == "table") 
+  <table class="$!{class} fancy">
+  
+    <thead>
+      <tr>
+        #if("$!{show.contains('title')}" == "true")
+        <th class="eventTableCourse tableHead">Course</th>
+        #end
+        
+        #if("$!{show.contains('startDate')}" == "true")
+        <th class="eventTableDate tableHead">Date</th>
+        #end
+        
+        #if("$!{show.contains('location')}" == "true")
+        <th class="eventTableLocation tableHead">Location</th>
+        #end
+        
+        #if("$!{show.contains('fileLink')}" || "$!{show.contains('formLink')}" == "true")        
+        <th colspan="2" class="eventTableInfo tableHead">Information</th>
+        #end
+      <tr>
+    </thead>
+    <tbody>
+
+    #foreach ($content in $list)
+      <tr class="eventTable $!{class}">
+        <td class="eventTableCourse tableData">$content.title dd</td>
+        <td class="eventTableDate tableData">$date.format('EEEE, MMMM d, yyyy', $content.startDate)</td>
+            
+        #if("$!{show.contains('location')}" == "true")
+        <td class="eventTableLocation tableData">$!{content.location}</td>
+        #end
+        
+        #if("$!{show.contains('fileLink')}" || "$!{show.contains('formLink')}" == "true")      
+        <td>
+        #if("$!{show.contains('fileLink')}" == "true")
+        <span class="eventTableFile tableData">
+            <a class="fileLink btn" href="$!{content.file.uri}">Brochure</a>
+        </span>
+        #end
+        </td>
+        
+        <td>
+        #if("$!{show.contains('formLink')}" == "true")   
+        <span class="eventTablePdf tableData">
+           <a class="formLink btn" href="$!{content.pdfForm.uri}">Register</a>
+        </span>
+       #end
+       </td>
+       
+       #end
+    </tr>
+    #end
+      ## Stop The Pull
+     </tbody>
+  </table> 
+  #end
+  ## End The Table Style          
+      
+  #if($!{style} == "standard")
+  
+  <span class="$!{class}">
+  <ul>
+
+  #foreach ($content in $list)
+    <li class="eventListing $!{class}">
+     
+      ####################
+      ## Displays Calendar Icon
+      ####################
+  
+      #if("$!{show.contains('dateCal')}" == "true")
+      <div class="eventDate alpha">
+         <span class="eventMonth">
+             $date.format('MMM', $content.startDate)
+         </span>
+         <span class="eventDay">
+             $date.format('d', $content.startDate)
+         </span>
+      </div>
+  
+      <div class="day clearfix omega">
+      #else
+  
+      <div class="day clearfix">
+      #end
+  
+        #editContentlet($content.inode)
+          
+        #if($UtilMethods.isSet($displayTitle) && "$!{show.contains('title')}" == "true")
+          <h3 class="article_Headline">
+            <a href="/events/$!{content.urlTitle}">$content.title</a>
+          </h3>
+        #end
+    
+        #if("$!{content.imageImageURI}" != "" && "$!{show.contains('image')}" == "true")
+        <div class="eventImg">
+           <img src="/resize_image?path=$!{content.imageImageURI}&maxh=100&maxw=100"></img>
+        </div>
+        #end
+    
+         #if("$!{show.contains('startDate')}" == "true")
+          <div class="startDate">
+            <span class="label">Starts</span>
+            <span class="data">
+        
+        #if("$date.format('hh:mm a', $content.startDate)" != "12AM")
+            <strong>$date.format('hh:m a', $content.startDate)</strong>,
+            #end
+            
+        $date.format('EEEE, MMMM d, yyyy', $content.startDate)
+            </span>
+        </div>
+          #end
+        ## Ends Start Date
+      
+        #if("$!{show.contains('endDate')}" == "true")
+          <div class="endDate">
+            <span class="label">Ends</span>
+            <span class="data">
+            
+            #if("$date.format('hh:mm a', $content.endDate)" != "12AM")
+            <strong>$date.format('hh:mm a', $content.endDate)</strong>,
+            #end
+            
+            $date.format('EEEE, MMMM d, yyyy', $content.endDate)
+            </span>
+          </div>
+          #end
+          ## Ends End Date
+    
+          #if("$!{show.contains('description')}" == "true")
+            <div class="eventDesc">
+              $UtilMethods.shortenString("$content.description", 220)
+            </div>
+          #end
+          ## ends Event Description
+      </div>
+      ## Ends Day Info
+  
+        #if("$!{show.contains('fileLink')}" || "$!{show.contains('formLink')}" || "$!{show.contains('readMore')}" == "true")
+          <div class="eventTools clearfix">
+              <ul class="eventFiles">
+        
+        #if("$!{show.contains('fileLink')}" == "true")
+        <li><a class="fileLink btn" href="">Brochure</a></li>
+        #end
+        
+        #if("$!{show.contains('formLink')}" == "true")
+        <li><a class="formLink btn" href="#">Form</a></li>
+        #end
+        
+        </ul>
+
+         #if("$!{show.contains('readMore')}" == "true")
+         <a class="readMore" href="/events/$!{content.urlTitle}">read more >></a>
+         #end
+        
+          </div>
+        #end
+        ## Ends Event Tool Bar 
+        
+        
+    </li>
+    #end
+    ## Ends Event Listing    
+  </ul>
+  </span>
+  #end
+  ## End the Standard Style    
+  
+  #if($!{showMoreEvents} == "true")
+  <div class="viewMore $!{class} clearfix">
+     <a href="$!{showMoreEventsLink1}">$!{showMoreEventsDisplay}</a>
+  </div>
+  #end
+  ##End Show More Events
+ 
+ </div>
+ ## Ends Widget Box 

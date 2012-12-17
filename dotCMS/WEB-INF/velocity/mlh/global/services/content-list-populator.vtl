@@ -1,0 +1,231 @@
+#set($mainMap = $contents.getEmptyMap())
+#set($mainList = $contents.getEmptyList())
+
+#set($maxResultsReturned = 150)
+
+#set($folderInode = $request.getParameter("folderInode"))
+
+##########################################################
+## Only accept "NewsArticle", "LeadershipBio", "Eventmlh", "Physician", and "Facility"
+##########################################################
+#set($contentType = $request.getParameter("contentType"))
+
+#set($contentWildcard = $request.getParameter("contentWildcard"))
+
+############################################################
+##
+## Populate the content type map with content type values to be accepted/processed
+##
+############################################################
+#set($contentTypeMap = $contents.getEmptyMap())
+#set($res = $contentTypeMap.put("NewsArticle", "NewsArticle"))
+#set($res = $contentTypeMap.put("LeadershipBio", "LeadershipBio"))
+#set($res = $contentTypeMap.put("Eventmlh", "Eventmlh"))
+#set($res = $contentTypeMap.put("Physician", "Physician"))
+#set($res = $contentTypeMap.put("Facility", "Facility"))
+
+## get the contentType from the map (if it does not exists will be null or empty string)
+#set($contentTypeVal = $contentTypeMap.get($contentType))
+#set($query = "")
+#if("$!{folderInode}" != ""  &&  "$!{contentTypeVal}" != "")
+
+	#set($folderPath = $folderAPI.findURLPath($folderInode))
+  
+	#set($query = "+structureName:${contentTypeVal}")
+	#if($folderInode == "SYSTEM_HOST")
+		#set($query = "$query +conhost:SYSTEM_HOST*")
+	#elseif($folderInode != "")
+		#set($query = "$query +(conFolder:$!{folderInode} conhost:$!{folderInode})")
+	#end
+  
+	#set($conApi = $contents.getContentletAPI())
+	#set($mlhUser = $cmsuser.getUserByEmail("stephen.blalock@mlh.org"))
+  
+	#if("$!{contentTypeVal}" == "NewsArticle")
+  
+		#if("$!{contentWildcard}" != "")
+			#set($query = "$query +NewsArticle.headline:*${contentWildcard}*")
+		#end
+    
+		#set($articleList = $dotcontent.pull("$!{query}", $maxResultsReturned, "NewsArticle.headline"))
+		#if($articleList && $articleList.size() > 0)
+			#foreach($article in $articleList)
+				#set($tempMap = $contents.getEmptyMap())
+				#set($res = $tempMap.put("inode", "$!{article.inode}"))
+				#set($res = $tempMap.put("identifier", "$!{article.identifer}"))
+				#set($res = $tempMap.put("title", "$!{article.title}"))
+				#set($res = $tempMap.put("urlTitle", "$!{article.urlTitle}"))
+				#set($res = $tempMap.put("headline", "$!{article.headline}"))
+				#set($res = $tempMap.put("uri", "/${article.urlMapRoot.selectValue}/${article.urlTitle}"))
+				#set($res = $tempMap.put("contentTitle", "$!{article.title}"))
+    
+				###############################################################
+				## pull any pages that this content is referenced on
+				###############################################################
+				#set($contentletFound = $conApi.find($article.inode, $mlhUser, false))
+				#set($pageListMap = $conApi.getContentletReferences($contentletFound, $mlhUser, false))
+				#if("$!{pageListMap}" != "" && $pageListMap.size() > 0)
+      
+					#set($pagesList = $contents.getEmptyList())
+      
+					#foreach($map in $pageListMap)
+						#set($refPage = $map.get("page"))
+						#if("$!{refPage}" != "")
+							#set($pagesMap = $contents.getEmptyMap())
+							#set($res = $pagesMap.put("pageUri", $refPage.getURI()))
+							#set($res = $pagesList.add($pagesMap))
+						#end
+					#end
+      
+					#if("$!{pagesList}" != "" && $pagesList.size() > 0)
+						#set($res = $tempMap.put("pageList", $pagesList))
+					#end
+      
+				#end
+    
+				#set($res = $mainList.add($tempMap))
+    
+			#end
+		#else
+			#set($res = $mainMap.put("error", "no NewsArticle(s) returned for query = ${query}"))
+			#set($res = $mainMap.put("errorSummary", "No Results"))
+		#end
+    
+	#elseif("$!{contentTypeVal}" == "LeadershipBio")
+  
+		#if("$!{contentWildcard}" != "")
+			#set($query = "$query +(LeadershipBio.lastName:*${contentWildcard}* LeadershipBio.firstName:*${contentWildcard}*)")
+		#end
+    
+		#set($leadershipBioList = $dotcontent.pull("$!{query}", $maxResultsReturned, "LeadershipBio.lastName"))
+		#if($leadershipBioList && $leadershipBioList.size() > 0)
+			#foreach($leadershipBio in $leadershipBioList)
+				#set($tempMap = $contents.getEmptyMap())
+				#set($res = $tempMap.put("inode", "$!{leadershipBio.inode}"))
+				#set($res = $tempMap.put("identifier", "$!{leadershipBio.identifer}"))
+				#set($res = $tempMap.put("firstName", "$!{leadershipBio.firstName}"))
+				#set($res = $tempMap.put("lastName", "$!{leadershipBio.lastName}"))
+				#if("$!{leadershipBio.jobTitle}" != "")
+					#set($res = $tempMap.put("jobTitle", "$!{leadershipBio.jobTitle}"))
+				#end
+				#if("$!{leadershipBio.suffix}" != "")
+					#set($res = $tempMap.put("suffix", "$!{leadershipBio.suffix}"))
+				#end
+				#set($res = $tempMap.put("contentTitle", "$!{leadershipBio.lastName}, $!{leadershipBio.firstName}"))
+    
+				#set($res = $tempMap.put("uri", "/leadership-bio/${leadershipBio.urlTitle}"))
+				#set($res = $mainList.add($tempMap))
+			#end
+		#else
+			#set($res = $mainMap.put("error", "no LeadershipBio(s) returned for query = ${query}"))
+			#set($res = $mainMap.put("errorSummary", "No Results"))
+		#end
+    
+	#elseif("$!{contentTypeVal}" == "Eventmlh")
+  
+		#if("$!{contentWildcard}" != "")
+			#set($query = "$query +Eventmlh.title:*${contentWildcard}*")
+		#end
+      
+		#set($eventmlhList = $dotcontent.pull("$!{query}", $maxResultsReturned, "Eventmlh.title"))
+		#if($eventmlhList && $eventmlhList.size() > 0)
+			#foreach($eventmlh in $eventmlhList)
+				#set($tempMap = $contents.getEmptyMap())
+				#set($res = $tempMap.put("inode", "$!{eventmlh.inode}"))
+				#set($res = $tempMap.put("identifier", "$!{eventmlh.identifer}"))
+				#set($res = $tempMap.put("urlTitle", "$!{eventmlh.urlTitle}"))
+				#set($res = $tempMap.put("title", "$!{eventmlh.title}"))
+				#set($res = $tempMap.put("startDate", "$!{eventmlh.startDate}"))
+				#set($res = $tempMap.put("endDate", "$!{eventmlh.endDate}"))
+				#set($res = $tempMap.put("publishDateAndTime", "$!{eventmlh.publishDateAndTime}"))
+				#set($res = $tempMap.put("uri", "/events/${eventmlh.urlTitle}"))
+				#set($res = $tempMap.put("contentTitle", "$!{eventmlh.title}"))
+				#set($res = $mainList.add($tempMap))
+			#end
+		#else
+			#set($res = $mainMap.put("error", "no Eventmlh(s) returned for query = ${query}"))
+			#set($res = $mainMap.put("errorSummary", "No Results"))
+		#end
+	#elseif("$!{contentTypeVal}" == "Physician")
+  
+		#if("$!{contentWildcard}" != "")
+			#set($query = "$query +(Physician.firstName:*${contentWildcard}* Physician.lastName:*${contentWildcard}*)")
+		#end
+      
+		#set($physicianList = $dotcontent.pull("$!{query}", $maxResultsReturned, "Physician.lastName"))
+		#if($physicianList && $physicianList.size() > 0)
+			#foreach($physician in $physicianList)
+				#set($tempMap = $contents.getEmptyMap())
+				#set($res = $tempMap.put("inode", "$!{physician.inode}"))
+				#set($res = $tempMap.put("identifier", "$!{physician.identifer}"))
+				#set($res = $tempMap.put("firstName", "$!{physician.firstName}"))
+				#set($res = $tempMap.put("lastName", "$!{physician.lastName}"))
+				#if("$!{physician.suffix}" != "")
+					#set($res = $tempMap.put("suffix", "$!{physician.suffix}"))
+				#end
+				#set($res = $tempMap.put("contentTitle", "$!{physician.lastName}, $!{physician.firstName}"))
+    
+				##set($res = $tempMap.put("uri", "/detail-page/physicians/$!{physician.lastName}-$!{physician.firstName}"))
+				#set($res = $tempMap.put("uri", "/detail-page/physicians/$!{physician.urlTitle}"))
+				#set($res = $mainList.add($tempMap))
+			#end
+		#else
+			#set($res = $mainMap.put("error", "no Physician(s) returned for query = ${query}"))
+			#set($res = $mainMap.put("errorSummary", "No Results"))
+		#end
+	#elseif("$!{contentTypeVal}" == "Facility")
+
+		#if("$!{contentWildcard}" != "")
+			#set($query = "$query +Facility.title:*${contentWildcard}*")
+		#end
+
+		#set($facilityList = $dotcontent.pull("$!{query}", $maxResultsReturned, "Facility.title"))
+		#if($facilityList && $facilityList.size() > 0)
+			#foreach($facility in $facilityList)
+				#set($tempMap = $contents.getEmptyMap())
+				#set($res = $tempMap.put("inode", "$!{facility.inode}"))
+				#set($res = $tempMap.put("identifier", "$!{facility.identifer}"))
+				#set($res = $tempMap.put("title", "$!{facility.title}"))
+				#set($res = $tempMap.put("contentTitle", "$!{facility.title}"))
+	    
+				#set($res = $tempMap.put("uri", "/locations/$!{facility.urlTitle}"))
+				#set($res = $mainList.add($tempMap))
+			#end
+		#else
+			#set($res = $mainMap.put("error", "no Facility(s) returned for query = ${query}"))
+			#set($res = $mainMap.put("errorSummary", "No Results"))
+		#end
+	#else
+		#set($res = $mainMap.put("error", "unexpected content type requested - $!{contentType}"))
+		#set($res = $mainMap.put("errorSummary", "Bad Request"))
+	#end
+#else
+	#if("$!{folderInode}" == ""  &&  "$!{contentType}" == "")
+		#set($res = $mainMap.put("error", "missing both folderInode and contentType request parameters"))
+	#elseif("$!{contentTypeVal}" == "")
+		#set($res = $mainMap.put("error", "unexpected content type requested - $!{contentType}"))
+	#elseif("$!{folderInode}" == "")
+		#set($res = $mainMap.put("error", "no folderInode specified in request"))
+	#else
+		#set($res = $mainMap.put("error", "unexpected error"))
+	#end
+	#set($res = $mainMap.put("errorSummary", "Bad Request"))
+#end
+
+
+
+#if($mainList && $mainList.size() > 0)
+	#set($tempMap = $contents.getEmptyMap())
+	#set($res = $tempMap.put("contentList", $mainList))
+	#if("$!{folderPath}" != "")
+		#set($res = $tempMap.put("parentFolderUri", $folderPath))
+	#end
+	#set($res = $tempMap.put("query", $query))
+	$json.generate($tempMap)
+#else  
+	#set($res = $mainMap.put("query", $query))
+	#if("$!{folderPath}" != "")
+		#set($res = $mainMap.put("parentFolderUri", $folderPath))
+	#end
+	$json.generate($mainMap)
+#end

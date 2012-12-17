@@ -1,0 +1,107 @@
+<script type="text/javascript">
+
+  var mlhGlobalVars = {
+    hostFolderInforUrl : "/ajax/host-folder-information.dot",
+    folderPathSpanToAdd : null,
+    folderInodeToCheck : null,
+    lastFolderInode : null
+  }
+  
+  var highlightContentType = function() {
+    mlhjq('.mlh-content-type').css({
+	"font-size" : "15px",
+        "font-weight" : "bold",
+	"color" : "#555555"
+    });
+  };
+  
+  
+  var maxRetries = 5;
+  var retryCount = 0;
+  var addFolderPathSpan = function() {
+    if (mlhjq('div#HostSelector').length > 0) {
+      mlhjq('div#HostSelector').append(mlhGlobalVars.folderPathSpanToAdd);
+    } else {
+      if (retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(addFolderPathSpan, 1000);
+      } else {
+        retryCount = 0;
+      }
+    }
+  };
+  
+  
+  var showFolderPath = function() {
+    mlhGlobalVars.folderInodeToCheck = mlhjq('input#folderInode').val();
+    
+    //ONLY need to build and show path if more than 1 level deep (folder inside host)
+    var canGetFolderInfo = mlhGlobalVars.folderInodeToCheck != null && mlhGlobalVars.folderInodeToCheck != "" && mlhGlobalVars.lastFolderInode != mlhGlobalVars.folderInodeToCheck;
+    canGetFolderInfo = canGetFolderInfo && mlhGlobalVars.folderInodeToCheck != "SYSTEM_FOLDER";
+    
+    if (canGetFolderInfo) {
+      
+      mlhGlobalVars.lastFolderInode = mlhGlobalVars.folderInodeToCheck;
+      
+      params = {
+        "folderInode" : mlhGlobalVars.folderInodeToCheck
+      };
+      
+      var fullPath = "";
+      mlhjq.getJSON(mlhGlobalVars.hostFolderInforUrl, params, function(jsonData){
+        mlhjq.each(jsonData, function(key, val) {
+          if (key == 'host') {
+            fullPath = "//" + val;
+          } else if (key == 'folderPath') {
+            fullPath += val;
+            mlhGlobalVars.folderPathSpanToAdd = mlhjq("<span/>", {
+              "id" : "mlh-folder-path",
+              "css" : {
+                "color" : "#999999",
+                "margin-left" : "10px",
+                "position" : 'absolute'
+              },
+              "text" : fullPath
+            });
+            mlhjq('#mlh-folder-path').remove();
+            setTimeout(addFolderPathSpan, 500);
+          }
+        });
+      });
+    }
+    if (mlhGlobalVars.folderInodeToCheck == "" && mlhjq('#hostId').val() != "") {
+      //then a host is set...clear value
+      mlhjq('#mlh-folder-path').remove();
+    }
+  };
+  
+  var fixCSSIssues = function() {
+    //removes fixed width on host/folder selector
+    if (mlhjq('div#HostSelector-hostFoldersTreeWrapper').length > 0) {
+      mlhjq('div#HostSelector-hostFoldersTreeWrapper').css('width', 'auto');
+    }
+  };
+  
+  var timerCheckFolderInodeChange = function() {
+    
+    showFolderPath();
+    fixCSSIssues();
+    
+    setTimeout(timerCheckFolderInodeChange, 1500)
+    
+  };
+  
+  mlhjq(document).ready(function(){
+    
+    highlightContentType();
+    
+    
+    showFolderPath();
+    
+    timerCheckFolderInodeChange();
+    
+  });
+    
+
+</script>
+<span style="color: gray;">Intentionally left empty.</span>

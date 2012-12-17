@@ -1,0 +1,62 @@
+<Context path="" docBase="../../dotCMS" debug="0" reloadable="false" crossContext="true">
+	
+	
+	<Resource name="mail/MailSession" auth="Container" type="javax.mail.Session" mail.smtp.host="localhost" />
+	
+	<!--
+		IMPORTANT your maxActive number of connections should be higher than the number of server threads you 
+		configured in your server.xml, if not on heavy loads you will start getting db connections errors.
+		Your number of server threads should be the sum of threads for every connector (http, https, AJP, etc) 
+		in your server.xml file.
+		We recommend you set your number of connections to be your max server threads + 10
+	 -->
+	<!-- POSTGRESQL 
+	<Resource name="jdbc/dotCMSPool" auth="Container" 
+	        type="javax.sql.DataSource"
+	        driverClassName="org.postgresql.Driver"
+	        url="jdbc:postgresql://localhost/dotcms"
+	        username="{your db user}" password="{your db password}" maxActive="60" maxIdle="10" maxWait="60000"
+		  removeAbandoned="true" removeAbandonedTimeout="60" logAbandoned="true" 
+		  validationQuery="SELECT 1" testOnBorrow="true" />		  -->
+	
+	<!-- MYSQL UTF8 
+	<Resource name="jdbc/dotCMSPool" auth="Container"
+		  type="javax.sql.DataSource" driverClassName="com.mysql.jdbc.Driver"
+		  url="jdbc:mysql://localhost/dotcms2?characterEncoding=UTF-8"
+		  username="{your db user}" password="{your db password}" maxActive="60" maxIdle="10" maxWait="60000"
+		  removeAbandoned="true" removeAbandonedTimeout="60" logAbandoned="true" 
+		  validationQuery="SELECT 1" testOnBorrow="true"/>
+	-->
+	
+	<!-- Oracle 
+	<Resource name="jdbc/dotCMSPool" auth="Container"
+		  type="javax.sql.DataSource" driverClassName="oracle.jdbc.OracleDriver"
+		  url="jdbc:oracle:thin:@localhost:1521:XE"
+		  username="{your db user}" password="{your db password}" maxActive="60" maxIdle="10" maxWait="60000"
+		  removeAbandoned="true" removeAbandonedTimeout="60" logAbandoned="true" 
+		  testOnBorrow="true" validationQuery="SELECT 1 from DUAL"/>
+	-->
+	<!-- MSSQL 
+	<Resource name="jdbc/dotCMSPool" auth="Container"
+		  type="javax.sql.DataSource" driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+		  url="jdbc:sqlserver://10.20.148.173:1433;databaseName=dotcms;failoverPartner=10.20.148.152;loginTimeout=15"
+		  username="sa" password="H0m3Fr3E!" maxActive="60" maxIdle="10" maxWait="60000"
+		  removeAbandoned="true" removeAbandonedTimeout="60" logAbandoned="true" 
+		  testOnBorrow="true" validationQuery="SELECT 1"/> -->
+<!-- 	<Resource name="jdbc/dotCMSPool" auth="Container"
+		  type="javax.sql.DataSource" driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+		  url="jdbc:sqlserver://127.0.0.1:1433;databaseName=dotcms2.1;"
+		  username="sa" password="H0m3Fr3E!" maxActive="60" maxIdle="10" maxWait="60000"
+		  removeAbandoned="true" removeAbandonedTimeout="60" logAbandoned="true" 
+		  testOnBorrow="true" validationQuery="SELECT 1"/> -->
+
+	<!-- MSSQL -->
+	<Resource name="jdbc/dotCMSPool" auth="Container"
+		  type="javax.sql.DataSource" driverClassName="net.sourceforge.jtds.jdbc.Driver"
+		  url="jdbc:jtds:sqlserver://localhost:1433/dotcms2.2"
+		  username="sa" password="H0m3Fr3E!" maxActive="60" maxIdle="10" maxWait="60000"
+		  removeAbandoned="true" removeAbandonedTimeout="60" logAbandoned="true" 
+		  testOnBorrow="true" validationQuery="SELECT 1" defaultTransactionIsolation="READ_COMMITTED"/>
+	
+	
+</Context>

@@ -1,0 +1,232 @@
+
+
+#if($!request.getParameter("physicianIdentifier"))
+	#set($physician = $dotcontent.find($request.getParameter("physicianIdentifier")))
+	#if("$!{physician}" != "")
+  
+		#set($profileType = "$!{physician.type1.selectValue}")
+		#set($physImageUri = "$!{physician.image.uri}")
+		#set($physImageTitle = "$!{physician.image.title}")
+
+		#set($physInode = $physician.inode)
+		#set($physFirstName = $physician.firstName)
+		#set($physMiddleInitial = $physician.middleInitial)
+		#set($physLastName = $physician.lastName)
+		#set($physSuffix = $physician.suffix)
+		#set($physPhone = $physician.phone)
+		#set($physFax = $physician.fax)
+		#set($physJobTitle = $physician.jobTitle)
+		#set($physBoardCert = $physician.boardCertification)
+		#set($physMedicalSchool = $physician.medicalSchool)
+		#set($physInternship = $physician.internship)
+		#set($physResidency = $URLMapContent.residency)
+		#set($physFellowship = $physician.fellowship)
+		#set($physOtherEducation = $physician.otherEducation)
+		#set($physPatientCareEmphasis = $physician.patientCareEmphasis)
+		#set($physAwardshonors = $physician.awardshonors)
+		#set($physSelectedResearch = $physician.selectedResearch)
+		#set($physVideoProfile = $physician.videoProfile)
+		
+	#else
+		No physician found for physicianIdentifier = $request.getParameter("physicianIdentifier")
+	#end 
+#elseif("$!{URLMapContent.inode}" != "")
+	######################
+	## then a detail page
+	######################
+    
+	#set($profileType = $URLMapContent.type1)
+	#set($physImageUri = $URLMapContent.imageImageURI)
+	#set($physImageTitle = $URLMapContent.imageImageTitle)
+
+	#set($physInode = $URLMapContent.inode)
+	#set($physFirstName = $URLMapContent.firstName)
+	#set($physMiddleInitial = $URLMapContent.middleInitial)
+	#set($physLastName = $URLMapContent.lastName)
+	#set($physSuffix = $URLMapContent.suffix)
+	#set($physPhone = $URLMapContent.phone)
+	#set($physFax = $URLMapContent.fax)
+	#set($physJobTitle = $URLMapContent.jobTitle)
+	#set($physBoardCert = $URLMapContent.boardCertification)
+	#set($physMedicalSchool = $URLMapContent.medicalSchool)
+	#set($physInternship = $URLMapContent.internship)
+	#set($physResidency = $URLMapContent.residency)
+	#set($physFellowship = $URLMapContent.fellowship)
+	#set($physOtherEducation = $URLMapContent.otherEducation)
+	#set($physPatientCareEmphasis = $URLMapContent.patientCareEmphasis)
+	#set($physAwardshonors = $URLMapContent.awardshonors)
+	#set($physSelectedResearch = $URLMapContent.selectedResearch)
+	#set($physVideoProfile = $URLMapContent.videoProfile)
+#else
+
+	MUST specfiy physicianIdentifier in request OR this velocity script must be included from a detail page url map pattern
+
+#end
+
+
+
+#set($physFullName = "")
+
+
+#if("$!{physFirstName}" != "")
+	#set($physFullName = $physFirstName)
+#end
+
+#if("$!{physMiddleInitial}" != "")
+	#set($physFullName = "${physFullName} ${physMiddleInitial}")
+#end
+
+#if("$!{physLastName}" != "")
+	#set($physFullName = "${physFullName} ${physLastName}")
+#end
+
+#if("$!{physSuffix}" != "")
+	#set($physFullName = "${physFullName} ${physSuffix}")
+#end
+
+
+<div id="physicianDetail" class="lebon">
+  
+	<div id="physicianInfo" class="grid_3 alpha">
+		<span class="physicianName">$!{physFullName}</span>
+		<span class="physicianImage">
+			#if(!$!{profileType.toLowerCase().contains("limited")})
+				#if ($UtilMethods.isSet($physImageUri))
+					<img src="$!{physImageUri}" alt="$!{physImageTitle}" />
+				#end
+			#end
+		</span>
+    
+		#pullRelatedContent('Parent_PhysicianPractice-Child_Physician', $physInode, '0', '')
+    
+		#if("$!{list}" != "" && $list.size() > 0)
+			<span class="physicianRow">
+				<span class="label">Location(s):</span>
+				<span class="data">
+					#foreach($practice in $list)
+						$practice.title
+						#if("$!{practice.description}" != "")
+							<br/>$practice.description
+						#end
+						#if("$!{practice.address1}" != "")
+							<br/>$practice.address1
+						#end
+						#if("$!{practice.address2}" != "")
+							<br/>$practice.address2
+						#end
+        
+						#set($cityStateZip = "$!{practice.city}, $!{practice.state} $!{practice.zip}")
+  
+						#if("$!{cityStateZip}" != "")
+							<br/>$cityStateZip
+						#end
+						#if("$!{practice.phone}" != "")
+							<br/>$practice.phone
+						#end
+						#if("$!{practice.fax}" != "")
+							<br/>$practice.fax
+						#end
+						#if("$!{practice.externalUrl}" != "")
+							<br/>Website:&nbsp;<a href="${practice.externalUrl}">$practice.title</a>
+						#end
+						<br/><br/>
+					#end
+				</span>
+			</span>
+		#end
+	</div>
+  
+	<div id="physicianDetails" class="grid_5 omega">
+		<h4 class="physicianJob">$!{physJobTitle}</h4>
+     
+		#if("$!{physPhone}" != "")
+			<span class="physicianRow">
+				<span class="label">Appointment Phone Number:</span>
+				<span class="data">$!{physPhone}</span>
+			</span>
+		#end
+    
+		#if("$!{physFax}" != "")
+			<span class="physicianRow">
+			<span class="label">Fax Number:</span>
+			<span class="data">$!{physFax}</span>
+			</span>
+		#end
+    
+		#if(!$!{profileType.toLowerCase().contains("limited")})
+    
+			#if("$!{physBoardCert}" != "")
+				<span class="physicianRow">
+					<span class="label">Board Certification:</span>
+					<span class="data">$!{physBoardCert}</span>
+				</span>
+			#end
+
+			#if("$!{physMedicalSchool}" != "")
+				<span class="physicianRow">
+					<span class="label">Medical School:</span>
+					<span class="data">$!{physMedicalSchool}</span>
+				</span>
+			#end
+
+			#if("$!{physInternship}" != "")
+				<span class="physicianRow">
+					<span class="label">Internship:</span>
+					<span class="data">$!{physInternship}</span>
+				</span>
+			#end
+
+			#if("$!{physResidency}" != "")
+				<span class="physicianRow">
+					<span class="label">Residency:</span>
+					<span class="data">$!{physResidency}</span>
+				</span>
+			#end
+
+			#if("$!{physFellowship}" != "")
+				<span class="physicianRow">
+					<span class="label">Fellowship:</span>
+					<span class="data">$!{physFellowship}</span>
+				</span>
+			#end
+			
+			#if("$!{physOtherEducation}" != "")
+				<span class="physicianRow">
+					<span class="label">Other Education:</span>
+					<span class="data">$!{physOtherEducation}</span>
+				</span>
+			#end
+
+			#if("$!{physPatientCareEmphasis}" != "")
+				<span class="physicianRow">
+					<span class="label">Patient Care Emphasis:</span>
+					<span class="data">$!{physPatientCareEmphasis}</span>
+				</span>
+			#end
+
+			#if("$!{physAwardshonors}" != "")
+				<span class="physicianRow">
+					<span class="label">Awards and Honors:</span>
+					<span class="data">$!{physAwardshonors}</span>
+				</span>
+			#end
+
+			#if("$!{physSelectedResearch}" != "")
+				<span class="physicianRow">
+					<span class="label">Specialties:</span>
+					<span class="data">$!{physSelectedResearch}</span>
+				</span>
+			#end
+			
+			#if("$!{physVideoProfile}" != "")
+				<span class="physicianRow">
+					<span class="label">Video Profile:</span>
+					<span class="data">$!{physVideoProfile}</span>
+				</span>
+			#end
+       
+		#end
+	</div>
+  
+</div>
+

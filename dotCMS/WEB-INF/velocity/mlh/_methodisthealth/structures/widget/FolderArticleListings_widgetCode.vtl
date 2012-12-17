@@ -1,0 +1,107 @@
+
+######################## Variables #########################################
+##
+## $displayTeaser
+## $displayThumbnail
+## $howManyColumns
+## $folderWhereArticlesAreStored
+##
+############################################################################
+
+
+###################################
+## setup the column class name
+###################################
+
+#if($howManyColumns == 1)
+  #set($colGridClassName = "grid_10")
+#elseif($howManyColumns == 2)
+  #set($colGridClassName = "grid_5")
+#elseif($howManyColumns == 3)
+  #set($colGridClassName = "grid_3")
+#elseif($howManyColumns == 4)
+  #set($colGridClassName = "grid_2")
+#else
+  #set($colGridClassName = "grid_10")
+#end
+
+
+## then handle Default case - use page's parent folder
+#if("$!{folderWhereArticlesAreStored}" == "")
+  ##set($currentPagesParentFolderPath = $VTLSERVLET_URI.substring(0, $VTLSERVLET_URI.lastIndexOf('/')))
+  #set($query = "+structureName:NewsArticle")
+#elseif($folderWhereArticlesAreStored == "SYSTEM_HOST")
+  #set($query = "+structureName:NewsArticle +conhost:SYSTEM_HOST*")
+#else
+  #set($query = "+structureName:NewsArticle +conFolder:$!{folderWhereArticlesAreStored}")
+#end
+
+## pull the articles from the built query
+#set($articleList = $dotcontent.pull("$!{query}", 0, "NewsArticle.publishDateAndTime desc"))
+
+#if("$!{articleList}" != "")
+  #if($articleList.size() > 0)
+    <div id="sectionListing" class="ui-corner-all ui-helper-clearfix">
+      
+      ##each item in this list contains a list, that list will populate each column
+      #set($columnLists = [])
+    
+      ## populate columnlists with empty lists that matches then number of $howManyColumns
+      #foreach($colCount in [1..$math.toInteger($howManyColumns)])
+        #set($added = $columnLists.add([]))
+      #end
+      
+      #set($articleCount = 0)
+      #foreach($article in $articleList)
+        #set($colIndex = $math.mod($articleCount, $howManyColumns))
+        #set($added = $columnLists.get($colIndex).add($article))
+        #set($articleCount = $articleCount + 1)
+      #end
+      
+      #set($columnCount = 0)
+      #set($columnSize = $columnLists.size())
+      #foreach($colList in $columnLists)
+      
+        #set($columnCount = $columnCount + 1)
+        
+        #if($columnCount == 1)
+          #set($className = "$!{colGridClassName} alpha")
+        #elseif($columnCount == $columnSize)
+          #set($className = "$!{colGridClassName} omega")
+        #else
+          #set($className = "$!{colGridClassName}")
+        #end
+        
+        <div class="${className}" style="float: left;">
+          <ul>
+            #foreach($articleItem in $colList)
+              <li>#editContentlet($articleItem.inode)
+                <a href="/$!{articleItem.urlMapRoot.selectValue}/$!{articleItem.urlTitle}">
+                  <h4><span class="headline">$articleItem.headline</span></h4>
+                  
+                  ##if("$!{displayThumbnail}" == "true")
+                     ##<span class="thumbnail">
+                         ##<img src="/thumbnail?inode=($articleItem.inode)">
+                     ##</span>
+                  ##end
+                  
+                  #if("$!{displayTeaser}" == "true")
+                    <span class="teaser"><p>$UtilMethods.prettyShortenString($!articleItem.teaser, 200)</p></span>
+                  #end
+                  
+
+                  
+                </a>
+              </li>
+            #end
+          </ul>
+        </div>
+        
+      #end
+    
+  
+    </div>
+  #else
+    Empty Article List returned from query = $!{query}
+  #end
+#end

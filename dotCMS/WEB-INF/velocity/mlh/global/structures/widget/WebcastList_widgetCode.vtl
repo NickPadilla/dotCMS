@@ -1,0 +1,197 @@
+#############################################################################
+## Description: build/display a [Webcast List]
+##
+##
+## ############ Variables ########################################################
+##
+## $listTitle - the title of the Webcast listing
+## $displayTeaser - true/false
+## $displayImage - true/false
+## $sortOnField - value (from a select field) that is used to sort the webcast list content pull.
+## $sortDirection - ascending/descending sort direction
+## $maxTeaserLength -
+## $howManyColumns - number of columns to display list in
+## $folderWhereWebcastsAreStored - host (OR) folder where WebPageContent and Webcast List will be pulled.
+## $usePagesCurrentFolder - 
+##    false: then use $folderWhereWebcastsAreStored to pull the webcast list
+##    true or empty: then use the widget's page's folder (currentFolder) to pull the webcast list
+## 
+## $dateRangeBegin - 
+## $dateRangeEnd - 
+## 
+#############################################################################
+
+#####################################################################
+## $urlPathAndPage (ex: '/home/examples/articles/index.dot')
+## Note: will always contain the page name in the path
+#####################################################################
+#set ($urlPathAndPage = "${UtilMethods.decodeURL($VTLSERVLET_URI)}")
+
+###########################################################
+## Get the folder path without the page name
+###########################################################
+#set($folderPath = $urlPathAndPage.substring(0, $urlPathAndPage.lastIndexOf('/')))
+
+#set($currentFolder = $folderAPI.findCurrentFolder($folderPath , $host))
+
+#set($wpc_webcastList_Errors = "")
+#if("$!{usePagesCurrentFolder}" != "false")
+    ## then use the widget's page's folder to pull the webcast listing
+    #if("$!{currentFolder}" != "")
+		#set($folderWhereWebcastsAreStored  = $currentFolder.inode)
+    #else
+		#set($wpc_webcastList_Errors = "Error: currentFolder variable is empy or NULL<br/><br/>urlPathAndPage = $urlPathAndPage<br/>folderPath = $folderPath")
+    #end
+#end
+  
+#if("$!{displayTitle}" == "true")
+	<h2>$!{listTitle}</h2>
+#end
+
+#if("$!{wpc_webcastList_Errors}" == "")
+  
+    #########################################################
+    ## Pull all Webcasts on folder specified in $folderWhereWebcastsAreStored
+    #########################################################
+
+	#set($webcastList_query = "+structureName:Webcast")
+	#if($folderWhereWebcastsAreStored == "SYSTEM_HOST")
+		#set($webcastList_query = "$webcastList_query +conhost:SYSTEM_HOST*")
+	#elseif($folderWhereWebcastsAreStored != "")
+		#set($webcastList_query = "$webcastList_query +(conFolder:$!{folderWhereWebcastsAreStored} conhost:$!{folderWhereWebcastsAreStored})")
+	#end
+  
+	#if("$!{dateRangeBegin}" != "" && "$!{dateRangeEnd}" != "")
+        #set($beginDateStr = $date.format("MM/dd/yyyy HH:mm:ss", $dateRangeBegin))
+        #set($endDateStr = $date.format("MM/dd/yyyy HH:mm:ss", $dateRangeEnd))
+        #set($webcastList_query = "$webcastList_query +Webcast.webcastDate:[$beginDateStr TO $endDateStr]")
+	#end
+  
+	#set($sortQuery = "Webcast.webcastDate desc")
+	#if("$!{sortOnField}" != "")
+		#set($sortQuery = "Webcast.${sortOnField}")
+		#if("$!{sortDirection}" != "" && "$!{sortDirection}" == "desc")
+			#set($sortQuery = "Webcast.${sortOnField} desc")
+		#end
+	#end
+	
+	#set($webcastList = $dotcontent.pull("$!{webcastList_query}", 0, "$sortQuery"))
+	#if($EDIT_MODE && $MLH_DEBUG == "true")
+		<div style="display: none;" class="webcast-list-query-info">
+			query = $webcastList_query<br/>sortParam = $sortQuery<br/>sortOnField = $sortOnField
+		</div>
+	#end
+	
+	#if("$!{webcastList}" != "" && $webcastList.size() > 0)
+    
+        ###################################
+        ## setup the column class name
+        ###################################
+		#if($howManyColumns == 1)
+			#set($colGridClassName = "grid_10")
+		#elseif($howManyColumns == 2)
+			#set($colGridClassName = "grid_5")
+		#elseif($howManyColumns == 3)
+			#set($colGridClassName = "grid_3")
+		#elseif($howManyColumns == 4)
+			#set($colGridClassName = "grid_2")
+		#else
+			#set($howManyColumns = 2)
+			#set($colGridClassName = "grid_5")
+		#end
+
+		#set($firstColClassName = "alpha")
+		#set($lastColClassName = "omega")
+    
+        #########################################################
+        ## Display Webcast listing 
+        #########################################################
+    
+		<div id="sectionListing" class="ui-corner-all ui-helper-clearfix">
+    
+			##each item in this list contains a list, that list will populate each column
+			#set($columnLists = [])
+    
+			## populate columnlists with empty lists that matches then number of $howManyColumns
+			#foreach($colCount in [1..$math.toInteger($howManyColumns)])
+				#set($added = $columnLists.add([]))
+			#end
+      
+			#set($webcastCount = 0)
+			#foreach($webcast in $webcastList)
+				#set($colIndex = $math.mod($webcastCount, $howManyColumns))
+				#set($added = $columnLists.get($colIndex).add($webcast))
+				#set($webcastCount = $webcastCount + 1)
+			#end
+      
+			#set($columnCount = 0)
+			#set($columnSize = $columnLists.size())
+			#foreach($colList in $columnLists)
+      
+				#set($columnCount = $columnCount + 1)
+        
+				#set($className = "$!{colGridClassName}")
+				#if($columnCount == 1)
+					#set($className = "$!{colGridClassName} alpha")
+				#elseif($columnCount == $columnSize)
+						#set($className = "$!{colGridClassName} omega")
+				#end
+        
+				<div class="${className} webCast" style="float: left;">
+					<ul>
+						#foreach($webcastItem in $colList)
+							<li>#editContentlet($webcastItem.inode)
+								##changed from /$!{webcastItem.urlMapRoot.selectValue}/$!{webcastItem.urlTitle} for ORlive
+								<a href="$!{webcastItem.url}">
+									#if ("$!{webcastItem.image}" != "" && "$!{webcastItem.image.uri}" != "" && "$!{displayImage}" != "false")
+										<div class="webCast_Image">
+											<img src="/resize_image?path=$!{webcastItem.image.uri}&maxw=120&maxh=120" alt="$!{webcastItem.image.title}" title="$!{webcastItem.image.title}">
+                  						</div>
+									#end
+									<div class="webCast_Info">
+										<span class="headline">$webcastItem.title</span>
+										<div class="date">
+                                            ##<span class="date-month">$date.format('MMM',$webcastItem.webcastDate)</span>
+                                            ##<span class="date-day">$date.format('dd',$webcastItem.webcastDate)</span>
+                                            ##<span class="date-year">$date.format('yyyy',$webcastItem.webcastDate)</span>
+											<span class="location">$!{webcastItem.location}</span>
+										</div>
+										#if("$!{displayTeaser}" != "false")
+											#if("$!{maxTeaserLength}" == "")
+												#set($maxTeaserLength = "200")
+											#end
+											<span class="teaser"><p>$UtilMethods.prettyShortenString($!webcastItem.teaser, $math.toInteger($maxTeaserLength))</p></span>
+										#end
+									</div>            
+                				</a>
+              				</li>
+						#end
+          			</ul>
+        		</div>
+        
+			#end
+    
+		</div> ## end sectionListing
+	#else
+		<p>We currently have no $!{listTitle}. Please check back with us in the future.</p>
+		#if($EDIT_MODE)
+			<div style="display: none;" class="no-webcasts-returned">
+				No webcasts returned.
+			</div>
+		#end
+	#end
+#end  
+  
+####################################
+## Display any errors
+####################################
+#if("$!{wpc_webcastList_Errors}" != "")
+	## show visible error if in edit mode
+	#if($EDIT_MODE)
+		$wpc_webcastList_Errors
+	#else
+		<div style="display: none;">$wpc_webcastList_Errors</div>
+	#end
+#end
+
+

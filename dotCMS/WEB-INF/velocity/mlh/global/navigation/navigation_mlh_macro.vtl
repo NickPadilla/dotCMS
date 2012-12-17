@@ -1,0 +1,60 @@
+##Gets Navigation the MLH way
+#macro (navigationMLH $startLevel $depth)
+
+  #set($overrideCurrentPath = "")
+  #if("$!{URLMapContent.host1}" != "")
+    #set($overrideCurrentPath = $folderAPI.findURLPath("$!{URLMapContent.host1.inode}"))
+    
+    #if("$!{overrideCurrentPath}" != "")
+      #set($overrideCurrentPath = "${overrideCurrentPath}index.dot")
+      #set($res = $request.setAttribute("mlh_override_current_path", "${overrideCurrentPath}"))
+      #if("$!{URLMapContent.title}" != "")
+        #set($crumbTitleOverride = "$!{URLMapContent.title}")
+      #elseif("$!{URLMapContent.headline}" != "")
+        #set($crumbTitleOverride = "$!{URLMapContent.headline}")
+      #elseif("$!{URLMapContent.contentTitle}" != "")
+        #set($crumbTitleOverride = "$!{URLMapContent.contentTitle}")
+      #end
+      #set($res = $request.setAttribute("mlh_override_crumb_title", $crumbTitleOverride))
+      <input type="hidden" class="overrideCurrentPath" value="${overrideCurrentPath}" />
+      <input type="hidden" class="crumbTitleOverride" value="${crumbTitleOverride}" />
+    #end
+  #end
+  
+  #set ($path = $nav.createMenuByDepth($startLevel, $depth, $request))
+  ##set($res = $dotlogger.error("**************** path = ${path}"))
+  #if ($path != "")
+    #parse($path)
+    #if ($EDIT_MODE)
+      #set ($PUBLISH_PERMISSION = $pageAPI.canUserPublish($HTMLPAGE_IDENTIFIER, false))
+      #set ($startFromPath = $nav.getStartFromPath(1, $request))
+      #set ($folder = $folderAPI.findCurrentFolder($startFromPath, $host))
+      #set ($menuId = $folder.inode)
+      <form action="${directorURL}" method="post" name="dot_form_menu_${nav.getFormCount()}" id="dot_form_menu_${nav.getFormCount()}">
+        <input type="hidden" name="cmd" value="orderMenu" />
+        <input type="hidden" name="path" value="$startFromPath" />
+        <input type="hidden" name="hostId" value="${host.identifier}" />
+        <input type="hidden" name="pagePath" value="${VTLSERVLET_URI}" />
+        <input type="hidden" name="referer" value="${VTLSERVLET_URI}" />
+        <input type="hidden" name="startLevel" value="${startLevel}" />
+        <input type="hidden" name="depth" value="${depth}" />
+        #if ($PUBLISH_PERMISSION)
+          <div class="dotMenuReorder"><a href="javascript:document.getElementById('dot_form_menu_${nav.getFormCount()}').submit();"></a></div>
+        #else
+          <div class="dotMenuReorder"></div>
+        #end
+        
+      </form>
+      $nav.increaseFormCount()
+    #end
+    #if ($navigationSourceCode)
+      #dotParse($navigationSourceCode)
+      
+      ##Clearing navigationSourceCode value to fix in edit mode when calling this macro two or more times, will not reuse this value even the variable is declared later.
+      #set ($navigationSourceCode = false)
+      
+    #else
+	#parse('/mlh/global/navigation/list_menus_mlh.vtl')
+    #end
+  #end
+#end

@@ -1,0 +1,11 @@
+#set($serverName = $request.getServerName())
+
+#if($serverName.endsWith("lebonheur.org"))
+    #parse('/mlh/_lebonheur/structures/widget/VideoPlayer_widgetCode.vtl')
+#elseif($serverName.endsWith("methodisthealth.org"))
+    #parse('/mlh/_methodisthealth/structures/widget/VideoPlayer_widgetCode.vtl')
+#elseif($serverName.endsWith("gomolli.org"))
+    #parse('/mlh/_gomolli/structures/widget/VideoPlayer_widgetCode.vtl')
+#elseif($serverName.endsWith("methodistmd.org"))
+    #parse('/mlh/_methodistmd/structures/widget/VideoPlayer_widgetCode.vtl')
+#end

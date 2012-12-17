@@ -1,0 +1,11 @@
+#set($serverName = $request.getServerName())
+
+#if($serverName.endsWith("lebonheur.org"))
+    #parse('/mlh/_lebonheur/detail/Facility_detail.vtl')
+#elseif($serverName.endsWith("methodisthealth.org"))
+    #parse('/mlh/_methodisthealth/detail/Facility_detail.vtl')
+#elseif($serverName.endsWith("gomolli.org"))
+    #parse('/mlh/_gomolli/detail/Facility_detail.vtl')
+#elseif($serverName.endsWith("methodistmd.org"))
+    #parse('/mlh/_methodistmd/detail/Facility_detail.vtl')
+#end

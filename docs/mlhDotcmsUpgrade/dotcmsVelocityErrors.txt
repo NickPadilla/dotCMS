@@ -1,0 +1,35 @@
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #--------------------------------------------------------------------------------------
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - # Velocity Error
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - # on url      : wsqa.lebonheur.org/application/detail-pages/physician-detail-ajax.dot
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - # on req      : /application/detail-pages/physician-detail-ajax.dot
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - # with macro  : #getContentByIdentifier
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - # on template : /mlh/_lebonheur/detail/Physician_detail.vtl
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.services.ContentletMapServices - identifier is null
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #    stack:
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /live/e9427b32-b014-411d-a040-846995cf110b.dotpage
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /live/93b5fb70-fc66-4cd1-8976-f4d6d14ce552.template
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /live/1807f7b5-414b-4a14-bbaa-31f81a496412.container
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /live/de0dc496-fd8b-4285-a60d-224010630610_1.content
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /live/095fc14b-563a-4e1b-bf7f-f05aa7d8f3a6_d0b93160-f1b6-4a96-8568-68fbb4df355e.field
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /mlh/_lebonheur/detail/Physician_detail.vtl
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #
+2012-12-17 05:46:31,059 ERROR com.dotmarketing.velocity.VelocityServlet - #--------------------------------------------------------------------------------------
+
+
+
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - #--------------------------------------------------------------------------------------
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - #
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - # Velocity Error
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - # on url      : wsqa.methodisthealth.org/about-us/faith-and-health/memphis/congressional-health-networks.dot
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - # on req      : /about-us/faith-and-health/memphis/congressional-health-networks.dot
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - # with macro  : #parseContainer
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - # on template : /mlh/rd/methodisthealth/structures/content/article.vtl
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - #    stack:
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /live/8a6df8dd-81ea-4b56-a5a5-75254f6e8877.dotpage
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /live/f8e66c3a-255b-4fd4-8111-3951d01c7a5f.template
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /live/22575697-f8bc-4de2-af0c-6a0401b14caa.container
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - #    -- /mlh/rd/methodisthealth/structures/content/article.vtl
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - #
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.velocity.VelocityServlet - #--------------------------------------------------------------------------------------
+2012-12-17 05:33:34,698 ERROR com.dotmarketing.viewtools.content.ContentTool - pullRelated

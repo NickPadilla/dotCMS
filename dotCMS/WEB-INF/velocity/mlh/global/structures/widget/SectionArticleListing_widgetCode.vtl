@@ -1,0 +1,120 @@
+######################## Variables #############################################
+## $titleToDisplay
+## $showHeadline
+## $showTeaser
+## $showImage
+## $showAttachmentLink
+## $showReadMore
+## $listStyle
+## $style
+##
+## $sectionType - a category
+## $folderWhereArticlesAreStored
+## $maxArticlesToPull
+############################################################################
+
+
+
+## then handle Default case - use page's parent folder
+#if("$!{folderWhereArticlesAreStored}" == "")
+	##set($currentPagesParentFolderPath = $VTLSERVLET_URI.substring(0, $VTLSERVLET_URI.lastIndexOf('/')))
+	#set($query = "+structureName:NewsArticle")
+#elseif($folderWhereArticlesAreStored == "SYSTEM_HOST")
+	#set($query = "+structureName:NewsArticle +conhost:SYSTEM_HOST*")
+#else
+	#set($query = "+structureName:NewsArticle +conFolder:$!{folderWhereArticlesAreStored}")
+#end
+
+#set($categoryList = "")
+
+#foreach($id in $sectionType)
+	#if($velocityCount == 1)
+		#set ($category = $categories.getCategoryByInode("$id"))
+		#set($categoryList = "categories:$category.categoryVelocityVarName")
+	#else
+		#set ($category = $categories.getCategoryByInode("$id"))
+		#set($categoryList = "$categoryList categories:$category.categoryVelocityVarName")
+	#end
+#end
+
+#if ($UtilMethods.isSet($categoryList))
+	#set($categoryList = "+(${categoryList})")
+#end
+
+#set($query = "$query $categoryList +live:true")
+
+## pull the articles from the built query
+#set($articleList = $dotcontent.pull("$!{query}", $maxArticlesToPull, "NewsArticle.publishDateAndTime desc"))
+
+<div class="articleList clearfix $style widget">
+	<h2>$!titleToDisplay</h2>
+	<span class="$style">
+		<ul>
+			#foreach($articleItem in $articleList)
+				#editContentlet($articleItem.inode)
+				<li id="article_Content" class="clearfix">
+					#if("$!{showHeadline}" == "true")
+						<h3 class="article_Headline">
+							<a href="/articles/$!{articleItem.urlTitle}">$!{articleItem.headline}</a>
+						</h3>
+					#end
+	    
+					#if("$!{showPublishDate}" == "true")
+						<div class="article_Details">
+							<span class="publishedOn-Label">Published On</span>
+							<span class="publishedOn-Date"> 
+								$date.format('MM/dd/yyyy', $articleItem.publishDateAndTime)
+							</span>
+						</div>
+					#end
+	    
+					#if("$!{showImage}" == "true" && "$!{articleItem.image}" != "")
+						<span class="article_Thumb">
+							<img src="/resize_image?path=$!{articleItem.image.uri}&w=110">
+						</span>
+					#end
+
+					#if("$!{showTeaser}" == "true")
+						<span class="article_Teaser">$!{articleItem.teaser}</span>
+					#end
+	    
+					#if("$!{showAttachmentLink}" == "false" && "$!{showReadMore}" == "true")
+						<div class="article_ReadMore">
+							<a href="/articles/$!{articleItem.urlTitle}">read more >></a>
+						</div>
+					#end 
+				</li>
+				
+				#####################################################################
+				## During vtl code migration I noticed this section of code that will not function correctly if
+				## it were to ever be reached, so I added an "if true == false" condition to ensure this code is never
+				## reached. If someone knows how this code section is supossed to work, then feel free to remove
+				## my addition and then fix the code - Stephen Blalock
+				#####################################################################
+				#if("true" == "false" && "$!{showAttachmentLink}" == "true" && "$!{showReadMore}" == "true")
+					<div id="article_Tools" class="clearfix">
+						#if("$!{showAttachmentLink}" == "true" && "$!{articleItem.attachment}" != "")
+							<div class="article_Attachment">
+								<span class="label">Attachment</span>
+								<a href="$!{articleItem.attachment.uri}">$!{articleItem.attachment.title}</a>
+							</div>
+						#end
+						#if("$!{showAttachmentLink}" == "true" && "$!{showReadMore}" == "true")
+							<div class="article_ReadMore">
+								<a href="/articles/$!{articleItem.urlTitle}">Read More</a>
+							</div>
+						#end
+					</a></li>
+				#end
+	  
+			#end
+		</ul>
+	</span>
+  
+	#if("$!{showShowMore}" == "true")
+		<div class="viewMore $!class clearfix">
+			<a href="$!{showMoreLink}">$!showMoreDisplay</a>
+		</div>
+	#end
+
+</div>

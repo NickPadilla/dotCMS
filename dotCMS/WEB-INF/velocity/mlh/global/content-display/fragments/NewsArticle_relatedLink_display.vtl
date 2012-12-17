@@ -1,0 +1,118 @@
+#############################################################
+## 
+## Pulls a related link's "relatedInodeId" and "relatedInodeType" field values and builds
+## the corresponding NewsArticle, Eventlmh, or LeadershipBio url mapping to their detail
+## page.....or builds the folder path, file path. External links should already be set.
+## 
+##
+## Required: $relatedLink
+##
+#############################################################
+
+## Default href is what is currently set to the relatedLink (for now)
+#set($relatedLinkHref = $relatedLink.href)
+
+#if("$!{relatedLink.href}" == "")
+
+  #if("$!{relatedLink.relatedInodeType}" == "NewsArticle")
+
+    #set($relatedLinkQuery = "+structureName:NewsArticle +inode:'${relatedLink.relatedInodeId}'")
+    #set($relatedLinkArticleList = $dotcontent.pull("$!{relatedLinkQuery}", 1, "Link.sortOrder1"))
+    
+    #if("$!{relatedLinkArticleList}" != "" && $relatedLinkArticleList.size() > 0)
+      #set($relatedArticle = $relatedLinkArticleList.get(0))
+    #else
+      ## then pull directly from db, this inode could be an old inode
+      
+      #set ($dbStartRow = 0)
+      #set ($dbMaxRow = 1)
+	  
+      #getSQLResults("select con.identifier from contentlet as con where con.inode='${relatedLink.relatedInodeId}'")
+      #if($UtilMethods.isSet($SQLError))
+         <div style="display: none;" class="sql-error-hidden">
+          Query FAILED <br/>
+          $query
+         </div>
+      #else
+        #foreach($res in $results)
+          #set($relatedIdentifier = $res.identifier)
+        #end
+        
+        #if("$!{relatedIdentifier}" != "")
+        	#set($relatedLinkQuery = "+structureName:NewsArticle +identifier:$!{relatedIdentifier}")
+	        #set($relatedLinkArticleList = $dotcontent.pull("$!{relatedLinkQuery}", 1, "Link.sortOrder1"))
+	        #if("$!{relatedLinkArticleList}" != "" && $relatedLinkArticleList.size() > 0)
+	          #set($relatedArticle = $relatedLinkArticleList.get(0))
+	        #else
+	          <div style="display: none;" class="content-pull-error-hidden">
+	           query: $query<br/><br/>
+	           results.size = $!{results.size()}
+	          </div>
+	        #end
+        #else
+        	<div style="display: none;" class="relatedIdentifier-null-empty-error-hidden">
+	            could not pull content with query = $query
+          	</div>
+        #end
+        
+        
+        
+      #end
+    #end
+    #set($relatedLinkHref = "/${relatedArticle.urlMapRoot.selectValue}/${relatedArticle.urlTitle}")
+    
+  #elseif("$!{relatedLink.relatedInodeType}" == "Eventmlh")
+    
+    #set($relatedLinkQuery = "+structureName:Eventmlh +inode:${relatedLink.relatedInodeId}")
+    #set($eventmlhList = $dotcontent.pull("$!{relatedLinkQuery}", 1, "Eventmlh.title desc"))
+    #set($eventmlh = $eventmlhList.get(0))
+    #set($relatedLinkHref = "/events/${eventmlh.urlTitle}")
+    
+  #elseif("$!{relatedLink.relatedInodeType}" == "LeadershipBio")
+
+    #set($relatedLinkQuery = "+structureName:LeadershipBio +inode:${relatedLink.relatedInodeId}")
+    #set($leadershipBioList = $dotcontent.pull("$!{relatedLinkQuery}", 1, "LeadershipBio.title desc"))
+    #set($leadershipBio = $leadershipBioList.get(0))
+    #set($relatedLinkHref = "/leadership-bio/${leadershipBio.urlTitle}")
+    
+  #elseif("$!{relatedLink.relatedInodeType}" == "file")
+    
+    #set($relatedIdentifier = $webapi.getIdentifierInode("${relatedLink.relatedInodeId}"))
+    
+    ## then pull directly from db, this inode could be an old inode
+    #if("$!{relatedIdentifier}" == "")
+      #set ($dbStartRow = 0)
+      #set ($dbMaxRow = 1)
+	  
+      #getSQLResults("select file.identifier from file_asset as file where file.inode='${relatedLink.relatedInodeId}'")
+      #if($EDIT_MODE && $UtilMethods.isSet($SQLError))
+         <div style="display: none;" class="sql-error-hidden">
+          Query FAILED <br/>
+          $query
+         </div>
+      #else
+        #foreach($res in $results)
+          #set($relatedIdentifier = $res.identifier)
+        #end
+      #end
+    #end
+    
+    #set($relatedFile = $filetool.getFile($relatedIdentifier , true))
+    #set($parentFolder = $filetool.getFileFolder($relatedFile))
+    
+     #if($EDIT_MODE)
+      <div class="testing-file-related" style="display: none;" >$relatedFile</div>
+    #end
+    
+    #set($relatedLinkHref = "${parentFolder.path}${relatedFile.fileName}")
+  #elseif("$!{relatedLink.relatedInodeType}" == "conFolder")
+    #set($relatedLinkHref = $folderAPI.findURLPath("${relatedLink.relatedInodeId}"))
+  #elseif("$!{relatedLink.relatedInodeType}" == "external")  
+    #set($relatedLinkHref = $relatedLink.href)
+  #end
+
+#else
+  ## then use existing href value
+  ## #set($relatedLinkHref = $relatedLink.href)
+#end
+<a href="$!{relatedLinkHref}" title="$!{relatedLink.title}">$!{relatedLink.linkText}</a>

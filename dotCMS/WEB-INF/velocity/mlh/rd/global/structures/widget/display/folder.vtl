@@ -1,0 +1,54 @@
+#if("$!{content}" != "")
+<div class="widget $customClassForContent"> 
+	$content
+</div>
+#end
+
+
+## setup current folder var
+#set($currentFolder = "")
+
+## if folder not selected,e.g. left as SYSTEM_HOST or empty, then use current path from VTLServletURI
+#if($folder1=="SYSTEM_HOST" || $folder1 == "")
+	#set ($urlPathAndPage = "${UtilMethods.decodeURL($VTLSERVLET_URI)}")
+	#set($folderPath = $urlPathAndPage.substring(0, $urlPathAndPage.lastIndexOf('/')))
+	#set($currentFolder = $folderAPI.findCurrentFolder($folderPath , $host))
+## otherwise, use selected
+#else
+	#set($currentFolder = $folderAPI.findCurrentFolder($folder1 , $host))
+#end
+
+
+## get the menu list( e.g. folders and pages under the currentFolder that are check as "show on menu"
+#set($menuItemList = $folderAPI.findMenuItems($currentFolder.inode))
+
+## is there at least one item?
+#if("$!{menuItemList}" != "" && $menuItemList.size() > 0)
+	#set($query = "")
+	
+	## loop thru and add ONLY the folders to the query
+	#foreach($menuItem in $menuItemList)
+		## get type
+		#set($menuItemType = "$!{menuItem.type}")
+		## if folder
+		#if("$!{menuItemType}" == "folder")
+			#set($query ="$query conFolder:$menuItem.inode")
+		#end  
+	#end
+	
+	#set($shortDescription_query = "+structureName:FolderShortDescription +($query)")
+		<div class="folder-list $customClass">
+			<ul class="row">
+				#foreach($con in $dotcontent.pull($shortDescription_query, 0, "FolderShortDescription.name"))
+					<li class="span$widthspan folder-btn">
+						<a href="$con.folder1.path">
+							<h3 class="folder-name">$con.name</h3>
+							<span class="folder-desc">$con.shortDescription</span>
+						</a>
+					</li>
+				<!-- /end folder-btn -->
+				#end
+			</ul>
+#else
+	no folders below the selected or current folder
+#end

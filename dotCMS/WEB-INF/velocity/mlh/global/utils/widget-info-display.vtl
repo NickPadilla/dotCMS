@@ -1,0 +1,260 @@
+###############################
+## info conerning this widget's field values
+## ONLY displayed in EDIT MODE
+###############################
+#if($EDIT_MODE)
+	
+	<script type="text/javascript">
+
+		if (typeof jQuery == 'undefined') {  
+			//manually load jquery
+		} else {
+			
+			$(document).ready(function(){
+			
+				var widgetInodeArray = [];
+				
+				$('.dotEditWidget').each(function(){
+					var widgetDevId = $(this).closest('.dotContentletEdit').attr('id');
+					var widgetInode = widgetDevId.substring(widgetDevId.indexOf('-') + 1);
+					widgetInodeArray.push(widgetInode);
+				});
+				
+				
+				var buildWidgetInfo = function(jsonData, widgetInodeId) {
+					var contentlets = jsonData.contentletMap;
+					var structures = jsonData.structureMap;
+					var fields = jsonData.fieldsMap;
+					
+					var widgetInfoPanel = $('<div/>', {
+						'id' : 'widget-inode-' + widgetInodeId,
+						'css' : {
+							'display' : 'none',
+							'class' : 'widget-info'
+						},
+						'class' : 'widget-info-panel'
+					});
+					var hidePanelSpan = $('<span/>', {
+						'text' : 'Hide',
+						'class' : 'widget-hide-panel'
+					});
+					var header = $('<h4/>', {
+						'text' : contentlets.widgetTitle
+					});
+					var widgetType = $('<span/>', {
+						'text' : '(' + structures.velocityVarName + ')'
+					});
+					widgetInfoPanel.append(hidePanelSpan).append(header.append(widgetType));
+					
+					var list = $('<ul/>');
+					
+					jQuery.each(fields, function(fieldKeyName, fieldMap){
+						if (fieldMap.fieldFieldType && fieldMap.fieldFieldType != 'hidden' && fieldMap.fieldFieldType != 'wysiwyg' && fieldKeyName != 'widgetTitle' && fieldKeyName != 'migrationInode') {
+							if (contentlets[fieldKeyName] && contentlets[fieldKeyName] != "") {
+								var li = $('<li/>', {
+									'text' : fieldMap.fieldName + ":"
+								});
+								var spanClassName = ((contentlets[fieldKeyName] + "").indexOf('true') > -1 || (contentlets[fieldKeyName] + "").indexOf('false') > -1) ? (contentlets[fieldKeyName] + "") : '';
+								var span = $('<span/>', {
+									'text' : contentlets[fieldKeyName],
+									'class' : spanClassName
+								});
+								if (contentlets[fieldKeyName].toString().toLowerCase().indexOf('parse') > -1) {
+									span.addClass('parsed-file-path');
+								}
+								list.append(li.append(span));
+							} else if (fieldMap.fieldFieldType == "host or folder" && contentlets.folder && contentlets.folder.toString().length > 0) {
+								var li = $('<li/>', {
+									'text' : fieldMap.fieldName + ":"
+								});
+								var span = $('<span/>', {
+									'class' : 'host-or-folder-path'
+								});
+								var inodeInput = $('<input/>', {
+									'type' : 'hidden',
+									'value' : contentlets.folder,
+									'class' : 'host-or-folder-inode'
+								});
+								list.append(li.append(span.append(inodeInput)));
+							}
+						} else if (fieldKeyName == 'widgetCode' && fieldMap.fieldValues != "") {
+							var li = $('<li/>', {
+								'text' : fieldMap.fieldName + ":"
+							});
+							var span = $('<span/>', {
+								'text' : fieldMap.fieldValues,
+								'class' : 'widget-code-field-values'
+							});
+							if (fieldMap.fieldValues.toString().toLowerCase().indexOf('parse') > -1) {
+								span.addClass('parsed-file-path');
+							}
+							list.append(li.append(span));
+						}
+					});
+					
+					var li = $('<li/>', {
+						'text' :  "modDate:"
+					});
+					var span = $('<span/>', {
+						'text' : contentlets.modDate
+					});
+					list.append(li.append(span));
+					
+					widgetInfoPanel.append(list);
+					
+					$('body').append(widgetInfoPanel);
+					
+					
+					var showWidgetInfoLink = $('<a/>', {
+						'class' : 'show-widget-info',
+						'id' : 'widget-info-link-' + widgetInodeId,
+						'css' : {
+							'margin': '0px 0px 0px 10px',
+							'font-size' : '12px',
+							'font-style' : 'italic',
+							'cursor' : 'pointer',
+							'text-decoration' : 'underline'
+						},
+						'text' : 'Settings',
+						'click' : function() {
+							//perform CSS changes if necessary
+							if (!$('#widget-inode-' + widgetInodeId).hasClass('css-changes-added')) {
+								
+								$('#widget-inode-' + widgetInodeId).css({
+									'position' : 'fixed',
+									'bottom' : '5px',
+									'left' : '5px',
+									'background-color' : '#2B2F33',
+									'width' : '350px',
+									'height' : '450px',
+									'color' : 'white',
+									'padding' : '5px',
+									'font-size' : '9px',
+									'z-index': '1001'
+								});
+								
+								$('#widget-inode-' + widgetInodeId + ' .widget-hide-panel').css({
+									'background-color' : '#2B2F33',
+									'color' : '#FFFFFF',
+									'cursor' : 'pointer',
+									'display' : 'block',
+									'float' : 'right',
+									'font-size' : '12px',
+									'margin' : '-20px -5px 0px 0px',
+									'padding' : '0px 4px 0px 4px',
+									'z-index': '1002'
+								}).click(function(){
+									$('#widget-inode-' + widgetInodeId).slideToggle();
+								});
+								
+								$('#widget-inode-' + widgetInodeId + ' h4').css({
+									'width' : '348px',
+									'background-color' : '#1F4E91',
+									'padding' : '3px 0px 3px 3px',
+									'font-size' : '16px',
+									'font-style' : 'italic',
+									'color' : '#FFFFFF',
+									'display' : 'inline-block'
+								});
+								$('#widget-inode-' + widgetInodeId + ' h4 span').css({
+									'font-size' : '12px',
+									'font-style' : 'normal',
+									'float' : 'right',
+									'margin-left' : '10px'
+								});
+								
+								$('#widget-inode-' + widgetInodeId + ' ul').css({
+									'list-style' : 'none',
+									'height' : '390px',
+									'overflow' : 'auto',
+									'padding' : '10px 0px 0px 0px',
+									'margin' : '0px 0px 0px 0px'
+								});
+								$('#widget-inode-' + widgetInodeId + ' ul li').css({
+									'font-size' : '12px',
+									'font-style' : 'italic',
+									'color' : '#FFFFFF',
+									'padding' : '0 0 14px 9px'
+								});
+								$('#widget-inode-' + widgetInodeId + ' ul li span').css({
+									'font-weight' : 'bold',
+									'font-size' : '12px',
+									'font-style' : 'normal',
+									'color' : '#FFFFFF',
+									'display' : 'inline-block',
+									'margin-left' : '5px'
+								});
+								$('#widget-inode-' + widgetInodeId + ' ul li span.parsed-file-path').css({
+									'color' : '#EAEDBC'
+								});
+								
+								$('#widget-inode-' + widgetInodeId + ' ul li span.true').css({
+									'color' : '#24A760'
+								});
+								$('#widget-inode-' + widgetInodeId + ' ul li span.false').css({
+									'color' : '#B35353'
+								});
+								
+								var folderInodeInput = $('#widget-inode-' + widgetInodeId + ' .host-or-folder-path .host-or-folder-inode');
+								if (folderInodeInput.length > 0) {
+									jQuery.getJSON('/ajax/host-folder-information.dot', {folderInode: folderInodeInput.val()}, function(jsonData){
+										$('#widget-inode-' + widgetInodeId + ' .host-or-folder-path').html('//' + jsonData.host + jsonData.folderPath);
+									});
+								}
+								
+								$('#widget-inode-' + widgetInodeId).addClass('css-changes-added')
+							}
+							
+							$('.widget-info-panel:not(#widget-inode-' + widgetInodeId + ')').hide();
+							$('#widget-inode-' + widgetInodeId).slideToggle();
+							
+														
+							
+							return false;
+						},
+						'href' : '#'
+					});
+					
+					$('#edit-' + widgetInodeId).after(showWidgetInfoLink);
+				}
+				
+				var loadWidgetInfoPanel = function() {
+					if (widgetInodeArray != null && widgetInodeArray.length > 0) {
+						var widgetInodeId = widgetInodeArray.pop();
+						var mlhServiceWidgetInfoUrl = "/mlh-service/widget-info.jsp";
+						var params = {
+							'widgetInode' : widgetInodeId,
+							'canHazAccess' : 'd1b55059d902df3b88f6f0bcf03602f9'
+						};
+						jQuery.getJSON(mlhServiceWidgetInfoUrl, params, function(jsonData){
+							//console.info(data);
+							if (jsonData.error) {
+								//TODO: display error message some how
+							} else {
+								buildWidgetInfo(jsonData, widgetInodeId);
+							}
+							loadWidgetInfoPanel();
+						});
+					}
+				};
+				
+				loadWidgetInfoPanel();
+				
+				/*
+				
+				
+			
+				
+				
+				
+				
+				$('#widget-inode-$!{content.inode}').closest('.dotContentlet').find('.dotContentletControls').find('div.dotContentletEdit').after(showWidgetInfoLink);
+				
+				*/
+				
+			});
+	       
+		}
+	</script>
+	
+#end

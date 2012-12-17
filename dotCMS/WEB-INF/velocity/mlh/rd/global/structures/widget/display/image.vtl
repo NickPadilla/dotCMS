@@ -1,0 +1,157 @@
+	<div class="span$widthspan widget $customClass">
+		## default theme
+		#if($imageTheme=="defaultImageTheme")
+			<a href="$linkForDefaultTheme"><img src="/dotAsset/$imageForDefaultTheme" alt="$altTextForDefaultTheme"/></a>
+			<span>$captionForDefaultTheme</span>
+		## popeye theme
+		#elseif($imageTheme=="popEye")
+			<div class="ppy">
+				<ul class="ppy-imglist">
+					
+					#if("$!{image1}" != "")
+					<li>
+						<a href="$link1"><img src="/dotAsset/$image1" alt="$altText1"/></a>
+						<span>$caption1</span>
+					</li>
+					#end
+					
+					#if("$!{image2}" != "")
+					<li>
+						<a href="$link2"><img src="/dotAsset/$image2" alt="$altText2"/></a>
+						<span>$caption2</span>
+					</li>	
+					#end
+					
+					#if("$!{image3}" != "")
+					<li>
+						<a href="$link3"><img src="/dotAsset/$image3" alt="$altText3"/></a>
+						<span>$caption3</span>
+					</li>
+					#end
+					
+					#if("$!{image4}" != "")
+					<li>
+						<a href="$link4"><img src="/dotAsset/$image4" alt="$altText4"/></a>
+						<span>$caption4</span>
+					</li>
+					#end
+					
+					#if("$!{image5}" != "")
+					<li>
+						<a href="$link5"><img src="/dotAsset/$image5" alt="$altText5"/></a>
+						<span>$caption5</span>
+					</li>
+					#end
+				</ul>
+				<!-- /end ppy-img-list -->
+				
+				<div class="ppy-outer">
+					<div class="ppy-stage">
+						<div class="ppy-nav">
+							<div class="nav-wrap">
+								<a class="ppy-prev" title="Previous image">Previous image</a>
+								<a class="ppy-play" title="Play Slideshow">Play Slideshow</a>
+								<a class="ppy-pause" title="Stop Slideshow">Stop Slideshow</a>
+								<a class="ppy-switch-enlarge" title="Enlarge">Enlarge</a>
+								<a class="ppy-switch-compact" title="Close">Close</a>
+								<a class="ppy-next" title="Next image">Next image</a>
+							</div>
+						</div>
+						<div class="ppy-counter">
+							<strong class="ppy-current"></strong> / <strong class="ppy-total"></strong> 
+						</div>
+					</div>
+					<div class="ppy-caption">
+						<span class="ppy-text"></span>
+					</div>
+				</div>
+				<!-- /end ppy-outer -->				
+			</div>
+		## carousel theme
+		#elseif($imageTheme=="carousel")
+		<div id="myCarousel" class="carousel slide">
+			<!-- Carousel items -->
+			<div class="carousel-inner">
+			
+				#if("($!{image1} || $!{carouselContent})" != "")
+					<div class="active item">
+						#if("$!{carouselContent}" != "")
+						<div class="slide-custom">
+							$carouselContent
+						</div>
+						#end
+						
+						<a href="$link1"><img src="/dotAsset/$image1" alt="$altText1"/></a>
+						#if("$!{caption1}" != "")
+						<div class="carousel-caption">
+							<h4>$altText1</h4>
+							$!{caption1}
+						</div>
+						#end
+					</div>
+					<!-- /end item -->
+				#end
+				
+				<!-- item -->
+				#if("$!{image2}" != "")
+					<div class="item">
+						<a href="$link2"><img src="/dotAsset/$image2" alt="$altText2"/></a>
+						#if("$!{caption2}" != "")
+						<div class="carousel-caption">
+							<h4>$altText2</h4>
+							$!{caption2}
+						</div>
+						#end
+					</div>
+					<!-- /end item -->
+				#end
+				
+				#if("$!{image3}" != "")
+					<div class="item">
+						<a href="$link3"><img src="/dotAsset/$image3" alt="$altText3"/></a>
+						#if("$!{caption3}" != "")
+						<div class="carousel-caption">
+							<h4>$altText3</h4>
+							$!{caption3}
+						</div>
+						<!-- /end item -->
+						#end
+					</div>
+					<!-- /end item -->
+				#end
+				
+				#if("$!{image4}" != "")
+					<div class="item">
+						<a href="$link4"><img src="/dotAsset/$image4" alt="$altText4"/></a>
+						#if("$!{caption4}" != "")
+						<div class="carousel-caption">
+							<h4>$altText4</h4>
+							$!{caption4}
+						</div>
+						#end
+					</div>
+					<!-- /end item -->
+				#end
+				
+				#if("$!{image5}" != "")
+					<div class="item">
+						<a href="$link5"><img src="/dotAsset/$image5" alt="$altText5"/></a>
+						#if("$!{caption5}" != "")
+						<div class="carousel-caption">
+							<h4>$altText5</h4>
+							$!{caption5}
+						</div>
+						#end
+					</div>
+					<!-- /end item -->
+				#end
+				</div>
+				<!-- /end carousel-inner -->
+				
+				<!-- Carousel nav -->
+				<a class="carousel-control left" href="#myCarousel" data-slide="prev">&lsaquo;</a>
+				<a class="carousel-control right" href="#myCarousel" data-slide="next">&rsaquo;</a>
+					
+		</div>
+		#end
+	</div>

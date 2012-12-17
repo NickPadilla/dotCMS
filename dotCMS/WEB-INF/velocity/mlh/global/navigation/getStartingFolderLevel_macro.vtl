@@ -1,0 +1,40 @@
+
+#macro(getStartingFolderLevel $currentFolderPath)
+  #set($start = 0)
+
+  #set($lastForwardSlashIndex = $currentFolderPath.lastIndexOf("/"))
+
+  #set($end = $currentFolderPath.length())
+  
+  #if($lastForwardSlashIndex == ($end - 1) || $currentFolderPath.endsWith(".dot"))
+	#set($end = $lastForwardSlashIndex)
+  #end
+  #set($end = $end - 1)
+
+
+  #set($beginFolderLevel = 1)
+
+  #if($start < $end)
+  
+    #set($range = [$start..$end])
+    #foreach($i in $range)
+      #set($oneUp = $i + 1)
+   
+      #set($pathSubString = $currentFolderPath.substring($i, $oneUp))
+      #if ("$!{pathSubString}"  == "/")
+        #set($beginFolderLevel = $beginFolderLevel + 1)
+      #end
+    #end
+  
+  #end
+  
+  #if($beginFolderLevel < 2)
+    #set($beginFolderLevel = 2)
+  #end
+  
+  #set($hasMenuItems = $nav.menuItems($currentFolderPath, 1, $request))
+  #if("$!{hasMenuItems}" == "false")
+    #set($beginFolderLevel = $beginFolderLevel - 1)
+  #end
+
+#end

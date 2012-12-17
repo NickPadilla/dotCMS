@@ -1,0 +1,549 @@
+<!doctype html>
+<!-- MLH Framework 2012 
+   Copyright 2012 Methodist Le Bonheur Healthcare -->
+
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+  <head>
+  
+    <!-- Basic Page Needs
+    ================================================== -->
+      <meta charset="utf-8" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>$HTMLPAGE_FRIENDLY_NAME</title>
+      <meta name="description" content="$HTMLPAGE_DESCRIPTION">
+      <meta name="keywords" content="$HTMLPAGE_KEYWORDS" >
+      
+    <!-- Mobile Specific Metas
+    ================================================== -->
+      <!-- Mobile viewport optimized: h5bp.com/viewport -->
+      <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0"  />
+      <meta name="HandheldFriendly" content="True">
+      <meta name="MobileOptimized" content="320">
+      
+      <!-- IE Fixes
+    ================================================== -->
+      <!-- Based on Foundation & h5bp.com/d/head-Tips
+    
+      <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you support IE 6.
+           chromium.org/developers/how-tos/chrome-frame-getting-started -->
+      
+      <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
+    
+      <!--[if (lt IE 9) & (!IEMobile)]>
+      	<script src="/global-rd/lib/js/lib/selectivizr.min.js"></script>
+      <![endif]-->
+    
+      <!--[if lt IE 9]>
+        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+      <![endif]-->
+      
+      <!--[if lt IE 9]>
+        <link rel="stylesheet" href="/meth-rd/css/ie.css">
+      <![endif]-->
+      
+      <!-- IE 9 Pin Site -->
+      <meta name="application-name" content="Methodist Healthcare" />
+      <meta name="msapplication-tooltip" content="With seven hospitals, multiple outpatient and diagnostic centers, and a growing network of physician practices, Methodist Healthcare offers Memphis and the Mid-South the best in healthcare services." />
+        
+      <!-- Mobile IE allows us to activate ClearType technology for smoothing fonts for easy reading -->
+      <meta http-equiv="cleartype" content="on">
+      
+      <!-- Facebook Open Graph 
+    ================================================== -->
+	  <!-- Based on h5bp.com/d/head-Tips -->
+	  <meta property="og:title" content="$HTMLPAGE_FRIENDLY_NAME" />
+	  <meta property="og:description" content="$HTMLPAGE_DESCRIPTION" />
+      
+      <!-- CSS
+    ================================================== -->
+    <link rel="stylesheet" href="/global-rd/css/bootstrap.min.css?v=$currentVersion">
+    <link rel="stylesheet" href="/global-rd/css/bootstrap-responsive.min.css?v=$currentVersion">
+    #if("$!{overrideDefaultCssFile}" == "")
+		<link rel="stylesheet" href="/meth-rd/css/methodist.css?v=$currentVersion">
+	#else
+		<link rel="stylesheet" href="$overrideDefaultCssFile?v=$currentVersion">
+	#end
+	#if("$!{overrideTemplateCssFile}" == "")
+	    #if($templateName=="home")
+	    	<link rel="stylesheet" href="/meth-rd/css/templates/tmp-home.css?v=$currentVersion">
+	    #elseif($templateName=="oneCol")
+	    	<link rel="stylesheet" href="/meth-rd/css/templates/tmp-oneCol.css?v=$currentVersion">
+	    #elseif($templateName=="oneColNav")
+	    	<link rel="stylesheet" href="/meth-rd/css/templates/tmp-oneColNav.css?v=$currentVersion">
+	    #elseif($templateName=="twoCol")
+	    	<link rel="stylesheet" href="/meth-rd/css/templates/tmp-twoCol.css?v=$currentVersion">
+	    #elseif($templateName=="twoColNav")
+	    	<link rel="stylesheet" href="/meth-rd/css/templates/tmp-twoColNav.css?v=$currentVersion">
+	    #elseif($templateName=="locations")
+	    	<link rel="stylesheet" href="/meth-rd/css/templates/tmp-locations.css?v=$currentVersion">	        
+	    #end
+	#else
+		<link rel="stylesheet" href="$overrideTemplateCssFile?v=$currentVersion">
+    #end
+   
+      <!-- Google Font -->
+      <link href="http://fonts.googleapis.com/css?family=Cabin:regular,500,bold&v1" rel="stylesheet" type="text/css">  
+      
+      <!-- Favicons
+    ================================================== -->
+    <link rel="shortcut icon" href="/meth-rd/img/favicon.ico">
+    <link rel="apple-touch-icon" href="/meth-rd/img/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/meth-rd/img/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/meth-rd/img/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/meth-rd/img/apple-touch-icon-144x144.png">
+      
+      <!-- Modernizr - www.modernizr.com/download/
+    ================================================== -->    
+      <!-- Modernizr enables HTML5 elements & feature detects for optimal performance. -->      
+    <script src="/global-rd/js/lib/modernizr.min.js"></script>
+    <!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->
+  
+</head>
+
+<body>
+  
+        <div id="headerBackground" class="visible-desktop">
+        <div id="header" class="container">
+                    
+          <ul class="nav nav-simple blue">
+            <li><a href="/login/">myMethodist Login</a></li>
+          </ul>
+          
+          <ul class="nav nav-simple grey">
+            <li><a href="/for-healthcare-professionals/">Healthcare Professionals</a></li>
+            <li><a href="/education/">Education</a></li>
+            <li><a href="/careers/">Careers</a></li>
+          </ul>
+          
+          <ul class="nav nav-simple green">
+            <li><a href="/contact-us/">Contact</a></li>
+            <li><a href="/about-us/">About Us</a></li>
+            <li><a href="/news-and-events/">News & Events</a></li>
+            <li><a href="/ways-to-help/">Ways To Help</a></li>
+          </ul>
+          
+        </div>
+      </div>
+      <!-- /end headerBackground -->
+  
+        <div id="navBackground">
+        <div id="nav" class="container">
+          <div class="navbar">
+            <div class="navbar-inner">
+              <div class="container">
+               <div class="navbar-mobile hidden-desktop">
+                 <div class="btn-toolbar">
+                   <div class="btn-group">
+                      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+                      <a class="btn btn-nav hidden-desktop" data-toggle="collapse" data-target=".nav-collapse">
+                        <i class="icon-th-list"></i>
+                      </a>
+                   
+                      <!-- .btn-navbar is used as the toggle for collapsed search content -->
+                      <a class="btn btn-nav hidden-desktop" data-toggle="collapse" data-target=".search-collapse">
+                          <i class="icon-search"></i>
+                      </a>
+                    </div>
+                    <!-- /end mobile btn-group -->
+                  </div>
+                  <!-- /end btn-toolbar -->
+                  
+                  <!-- Be sure to leave the brand out there if you want it shown -->
+                  <a class="brand brand-meth hidden-deskop" href="#">Methodist Healthcare</a>
+               </div>
+               <!-- /end navbar-mobile -->
+               
+                <!-- Everything you want hidden at 940px or less, place within here -->
+                <div class="nav-collapse">
+                  <ul class="nav nav-main pull-left">
+                    <li class="visible-desktop">
+                      <a class="logo" href="/">
+                      </a>
+                    </li>
+                    <!-- /end nav meth brand -->
+                    
+                    <li class="dropdown">
+                      <a href="/locations/" class="dropdown-toggle" data-toggle="dropdown">
+                        <span class="title">Locations</span>
+                        <span class="sub-title">Hospitals & Clinics</span>
+                      </a>
+                      
+                      <ul class="dropdown-menu mega-drop hidden-phone hidden-tablet">
+                        <div class="mega-topper">
+                          <span class="pull-right">
+                            <a class="btn" href="/locations/map.dot">View a map</a>
+                          </span>
+                        </div>
+                        
+                        <!-- links -->
+                        <div class="span3">
+
+                          <ul class="nav nav-list nav-stacked">
+                            <li class="nav-large">
+                              <a href="/locations/#Hospitals">
+                                <span class="title">Hospitals</span>
+                                <span class="sub-title">Seven Locations in West Tennessee</span>
+                              </a>
+                            </li>
+                            <li class="nav-large">
+                              <a href="/locations/#Wound-Healing-Centers">
+                                <span class="title">Wound Healing</span>
+                                <span class="sub-title">Five Wound Healing Centers</span>
+                              </a>
+                            </li>
+                            <li class="nav-large">
+                              <a href="/locations/#Sleep-Centers">
+                                <span class="title">Sleep Center</span>
+                                <span class="sub-title">Three Sleep Disorders Centers</span>
+                              </a>
+                            </li>
+                            <li class="nav-large">
+                              <a href="/locations/#Physician-Practices">
+                                <span class="title">Physician Practices</span>
+                                <span class="sub-title">Affiliated Physicians</span>
+                              </a>
+                            </li>
+                            <li class="nav-large">
+                              <a href="/locations/#Minor-Medical-Centers">
+                                <span class="title">Minor Medical Centers</span>
+                                <span class="sub-title">Four Minor Medical Centers</span>
+                              </a>
+                            </li>
+                            <li class="nav-large">
+                              <a href="/locations/#Surgery-Centers">
+                                <span class="title">Surgery Centers</span>
+                                <span class="sub-title">Five Outpatient Surgery Centers</span>
+                              </a>
+                            </li>
+                            <li class="nav-large">
+                              <a href="/locations/#Diagnostic-Centers">
+                                <span class="title">Dianostic Centers</span>
+                                <span class="sub-title">Outpatient Imaging Services</span>
+                              </a>
+                            </li>
+                            <li class="nav-large">
+                              <a href="/locations/#Cancer-Treatment-Centers">
+                                <span class="title">Cancer Treatment Centers</span>
+                                <span class="sub-title">Outpatient Cancer Care</span>
+                              </a>
+                            </li>
+                            <li class="nav-large">
+                              <a href="/locations/#Hospice">
+                                <span class="title">Hospice</span>
+                                <span class="sub-title">Compassionate Care</span>
+                              </a>
+                            </li>
+                          </ul>
+                          
+                          
+                        </div>
+                      </ul>
+                      <!-- /end mega-drop -->                      
+                    </li>
+                    <!-- /end nav locations -->
+                    
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <span class="title">Our Services</span>
+                        <span class="sub-title">Specialities & Classes</span>
+                      </a>
+                      
+                      <ul class="dropdown-menu mega-drop hidden-phone hidden-tablet">
+                        <!-- links -->
+                        <div class="span6">
+                          <div class="row">
+                            <div class="mega-topper">
+                              <span class="pull-right">
+                                <a class="btn" href="/support-groups/">Support Groups</a>
+                                <a class="btn" href="/classes/">Classes</a>
+                                <a class="btn" href="/healthcare-services/#">All Services</a>
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div class="row">
+                            <div id="serviceList-nav"></div> 
+                        </div>      
+                          
+                          <div class="row">
+                            
+                       <!-- Services Mega Menu -->
+                                 <ul id="serviceList" class="nav nav-list nav-stacked nav-services">
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/brain-and-spine-institute/">
+                                     <span class="title wordwrap">Brain and Spine Institute</span>
+                                     <span class="sub-title">Neuroscience Research and Treatment</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/cancer-center/">
+                                     <span class="title">Cancer Center</span>
+                                     <span class="sub-title">Treatment and Support</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/cosmetic-reconstructive-surgery/">
+                                     <span class="title">Cosmetic & Reconstructive Surgery</span>
+                                     <span class="sub-title">Surgical Procedures</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/diabetes-care/">
+                                     <span class="title">Diabetes Care</span>
+                                     <span class="sub-title">Education and Counseling</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/screenings-scans/">
+                                     <span class="title">Diagnostic Services</span>
+                                     <span class="sub-title">Screenings and Scans</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/ear-nose-throat/">
+                                     <span class="title">Ear, Nose & Throat</span>
+                                     <span class="sub-title">Hearing and Balance</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/emergency-medicine/">
+                                     <span class="title">Emergency Medicine</span>
+                                     <span class="sub-title">Emergency Contact Numbers</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/employee-assistance-program/">
+                                     <span class="title">Employee Assistance Program</span>
+                                     <span class="sub-title">Confidential Counseling Services</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/eye-care/">
+                                     <span class="title">Eye Care</span>
+                                     <span class="sub-title">Hamilton Eye Institute Surgery Center</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/gastrointestinal-health/">
+                                     <span class="title">Gastrointestinal Health</span>
+                                     <span class="sub-title">Digestive System Treatments</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/heart-vascular-health/">
+                                     <span class="title">Heart & Vascular Health</span>
+                                     <span class="sub-title">Cardiac Care</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/home-care/">
+                                     <span class="title">Home Care</span>
+                                     <span class="sub-title">Nursing and Therapy Visits</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/home-medical-equipment/">
+                                     <span class="title">Home Medical Equipment</span>
+                                     <span class="sub-title">Online Ordering and Home Delivery</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/hospice-palliative-care/">
+                                     <span class="title">Hospice & Palliative Care</span>
+                                     <span class="sub-title">Physical and Spiritual Care</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/infusion-therapy/">
+                                     <span class="title">Infusion Therapy</span>
+                                     <span class="sub-title"> IV Medications and Supplies</span>
+                                     </a>
+                                   </li>   
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/lungs-respiratory-care/">
+                                     <span class="title">Lungs & Respiratory Care</span>
+                                     <span class="sub-title">Lung Conditions and Treatment</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/mens-health/">
+                                     <span class="title">Men's Health</span>
+                                     <span class="sub-title">Urologic Conditions</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/minor-medical-services/">
+                                     <span class="title">Minor Medical Services</span>
+                                     <span class="sub-title">Urgent Care</span>
+                                     </a>
+                                   </li>    
+                                   
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/orthopaedics/">
+                                     <span class="title">Orthopaedics</span>
+                                     <span class="sub-title">Joint Programs</span>
+                                     </a>
+                                   </li>
+                
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/pediatric-care/">
+                                     <span class="title">Pediatric Care</span>
+                                     <span class="sub-title">Children’s Units</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/rehabilitation/">
+                                     <span class="title">Rehabilitation</span>
+                                     <span class="sub-title">Physical and Occupational Therapy</span>
+                                     </a>
+                                   </li>
+                
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/senior-care/">
+                                     <span class="title">Senior Care</span>
+                                     <span class="sub-title">Senior’s Center</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/sickle-cell-center/">
+                                     <span class="title">Sickle Cell Center</span>
+                                     <span class="sub-title">Comprehensive Treatment</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/sleep-disorders/">
+                                     <span class="title">Sleep Disorders</span>
+                                     <span class="sub-title">Sleep Disorders Center</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/stroke-center/">
+                                     <span class="title">Stroke Center</span>
+                                     <span class="sub-title">Prevention and Treatment</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/transplant-institute/">
+                                     <span class="title">Transplant Institute</span>
+                                     <span class="sub-title">Liver, Kidney, and Pancreas Transplants</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/womens-health">
+                                     <span class="title">Women's Health</span>
+                                     <span class="sub-title">Maternity, Gynecology, and Imaging</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/work-injury-care/">
+                                     <span class="title">Work Injury Care</span>
+                                     <span class="sub-title">Occupational Health</span>
+                                     </a>
+                                   </li>
+                                   <li class="nav-large">
+                                     <a href="/healthcare-services/wound-healing/">
+                                     <span class="title">Wound Healing</span>
+                                     <span class="sub-title">Comprehensive Wound Healing Centers</span>
+                                     </a>
+                                   </li>
+                                 </ul>
+                                 <!-- /end Services List -->
+                            
+                         </div>
+                         <!-- /end row -->
+                        </div>
+                      </ul>
+                      <!-- /end mega-drop -->    
+                    </li>
+                    <!-- /end nav our services -->
+                  </ul>
+                  <!-- /end left main nav -->
+                  
+                  <ul class="nav nav-main pull-right">
+                    <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <span class="title">Patients & Visitors</span>
+                        <span class="sub-title">Guide To Your Stay</span>
+                      </a>
+                      
+                      <ul class="dropdown-menu mega-drop hidden-phone hidden-tablet">
+                          <!-- links -->
+                          <div class="span6">
+                            <div class="row">
+                              <div class="span3">
+                                <ul class="nav nav-list nav-stacked">
+                                  <li class="nav-header"><a href="/patients-guests/">Patients</a></li>
+                                  <li class="nav-simple"><a href="/patients-guests/patient-handbook/">Patient Handbook</a></li>
+                                  <li class="nav-simple"><a href="/patients-guests/pre-registration/">Pre-Registration</a></li>
+                                  <li class="nav-simple"><a href="/patients-guests/patient-privacy-practices/">Patient Private Practices</a></li>
+                                  <li class="nav-simple"><a href="/patients-guests/patient-advocacy/">Patient Advocacy</a></li>
+                                  <li class="nav-simple"><a href="/patients-guests/billing-department/">Billing Department</a></li>
+                                </ul>
+                              </div>
+                              <div class="span3">
+                                <ul class="nav nav-list nav-stacked">
+                                  <li class="nav-header"><a href="/patients-guests/">Guests</a></li>
+                                  <li class="nav-simple"><a href="/patients-guests/visitor-information/">Guest Information</a></li>
+                                  <li class="nav-simple"><a href="/patients-guests/care-pages/">Care Pages</a></li>
+                                </ul>
+                                <ul class="nav nav-list nav-special">
+                                  <li class="nav-large">
+                                    <a href="/patients-guests/find-a-physician/">
+                                      <span class="title">Find A Physician</span>
+                                    </a>
+                                  </li>
+                                  <li class="nav-large">
+                                    <a href="/patients-guests/contact-us/">
+                                      <span class="title">Contact Us</span>
+                                    </a>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </ul>
+                        <!-- /end mega-drop -->
+                      </li>
+                    <!-- /end nav patient & visitors -->
+                    
+                    <li>
+                      <a href="/patients-guests/contact-us/">
+                        <span class="title">Find A Doctor</span>
+                        <span class="sub-title">Physician Search</span>
+                      </a>
+                    </li>
+                    <!-- /end nav search for doctor -->
+                    
+                    <form class="navbar-search pull-left visible-desktop">
+                      <input type="text" class="search-query" placeholder="Search">
+					  <input class="searchButton" type="submit" alt="Search" value="Go">
+                    </form>
+                    <!-- /end nav search form -->
+                  </ul>
+                </div>
+                <!-- end main nav -->
+                
+                <div class="search-collapse collapse hidden-desktop">
+                  <ul class="nav mobile">
+                    <form class="mobile-search">
+                      <input type="text" class="search-query" placeholder="Search">
+					  <input class="searchButton" type="submit" alt="Search" value="Go">
+                    </form>
+                   </ul>
+                </div>
+               <!-- end mobile search -->
+               
+              </div>
+            </div>
+            <!-- /end navbar-inner -->
+          </div>
+          <!-- /end navbar -->
+        </div>
+        <!-- /end nav -->
+      </div>
+      <!-- /end navBackground -->

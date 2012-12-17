@@ -1,0 +1,32 @@
+<div id="widgetVideo" class="widget">
+	#if($UtilMethods.isSet($width))
+		#set($width = $width)
+	#else
+		#set($width = '700')
+	#end
+
+	#if($UtilMethods.isSet($height))
+		#set($height = $height)
+	#else
+		#set($height = '365')
+	#end
+
+	#if($UtilMethods.isSet($autoStart))
+		#set($autostart = '$autoStart')
+	#else
+		#set($autostart = 'false')
+	#end
+
+	#if($UtilMethods.isSet($imageImageURI))
+		#set($image = '$image')
+	#end
+
+	#set($videoPlayerDiv = "$ContentIdentifier")
+
+	#if($UtilMethods.isSet($videoPathFileURI))
+		#videoPlayer("$videoPathFileURI")
+	#else
+		#videoPlayer("$videoLink")
+	#end
+</div>
+

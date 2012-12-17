@@ -3,11 +3,7 @@
 tomcat/conf
 bin/*.sh
 *.log
-.classpath
-.settings/*
-.project
-**/.svn/
-**/.svn/*
+.svn
 tomcat/work
 tomcat/logs
 tomcat/temp

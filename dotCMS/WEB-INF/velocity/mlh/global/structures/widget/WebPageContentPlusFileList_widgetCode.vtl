@@ -1,0 +1,412 @@
+##dotParse('//$!{SUBDOMAIN_PREFIX}.resources.org/application/utils/mlh_macro_util.vtl')
+#parse('/mlh/global/utils/mlh_macro_util.vtl')
+
+#####################################################################
+## $urlPathAndPage (ex: '/home/examples/articles/index.dot')
+## Note: will always contain the page name in the path
+#####################################################################
+#set ($urlPathAndPage = "${UtilMethods.decodeURL($VTLSERVLET_URI)}")
+
+
+###########################################################
+## Get the folder path without the page name
+###########################################################
+#set($folderPath = $urlPathAndPage.substring(0, $urlPathAndPage.lastIndexOf('/')))
+
+#set($currentFolder = $folderAPI.findCurrentFolder($folderPath , $host))
+
+#set($wpc_fileOrLinkList_Errors = "")
+
+#if("$!{usePagesCurrentFolder}" != "false")
+  ## then use the widget's page's folder to pull the article listing
+  #if("$!{currentFolder}" != "")
+    #set($folderWhereItemsAreStored  = $currentFolder.inode)
+  #else
+    #set($wpc_fileOrLinkList_Errors = "Error: currentFolder variable is empy or NULL<br/><br/>urlPathAndPage = $urlPathAndPage<br/>folderPath = $folderPath")
+  #end
+#end
+
+#if("$!{wpc_fileOrLinkList_Errors}" == "")
+
+  #########################################################
+  ## Pull WebPageContent on folder specified in $folderWhereItemsAreStored
+  #########################################################
+  #set($wpc_query = "+structureName:webPageContent")
+
+  
+  ## check which folder from which to get the wpc
+  #if($folderWhereItemsAreStored == "SYSTEM_HOST")
+    #set($wpc_query = "$wpc_query +conhost:SYSTEM_HOST*")
+  #elseif($folderWhereItemsAreStored != "")
+    #set($wpc_query = "$wpc_query +(conFolder:$!{folderWhereItemsAreStored} conhost:$!{folderWhereItemsAreStored})")
+  #end
+  
+  ## pull the wpc
+  #set($wpcList = $dotcontent.pull("$!{wpc_query}", 1, "webPageContent.title desc"))
+
+  ## display the wpc or set error
+  #if("$!{wpcList}" != "" && $wpcList.size() > 0)
+    #set($wpc = $wpcList.get(0))
+    ##dotParse('//$!{SUBDOMAIN_PREFIX}.resources.org/application/content-display/fragments/wpc_display_fragment.vtl')
+	#parse('/mlh/global/content-display/fragments/WebPageContent_display.vtl')
+  #else
+    #set($wpc_fileOrLinkList_Errors = "$wpc_fileOrLinkList_Errors <li>No webPageContent returned from query = $wpc_query </li>")
+  #end
+
+  ## start the list query
+  #set($list_query = "+(structureName:ExtendedFile structureName:Link) ")
+  
+  ## check where from to pull the list
+  #if($folderWhereItemsAreStored == "SYSTEM_HOST")
+    #set($list_query = "$list_query +conhost:SYSTEM_HOST*")
+  #elseif($folderWhereItemsAreStored != "")
+    #set($list_query = "$list_query +(conFolder:$!{folderWhereItemsAreStored} conhost:$!{folderWhereItemsAreStored})")
+  #end
+  
+  ## if max links is empty, limit at 100
+  #if("$!{maxLinksToDisplay}" == "")
+    #set($maxLinksToDisplay = "100")
+  #end
+
+
+  ## check for a sort by option, defaults to mod date desc
+  #set($sortBy = "modDate desc")
+  #if("$!{sortListBy}" != "")
+    #set($sortBy = "")
+    #if("$!{sortDirection}" != "" && "$!{sortDirection}" == "desc")
+      #set($sortBy = "${sortListBy} desc")
+    #end
+  #end
+  
+  ## are we using the accordian display?
+  #if("$!{useAccordianView}" != "" && "$!{useAccordianView}" == "true")
+  
+    #*
+    Start accordian List Display
+    *#
+    
+    ## call the javascript and the filter code
+    
+    #returnAccordianJavaScriptAndFilterFormSetup("div#articleListing table tr td")
+    
+    ## make sure they selected an accordian type
+    #if("$!{accordianType}" != "")  
+      
+      ## if accoridian displaed by category
+      #if($accordianType=="category" )
+    
+    
+  
+        ## make sure they've selected a category
+        #if("$!{extendedFileTypeRootCategory}" != "")
+          ## and only one category
+          #if($extendedFileTypeRootCategory.size()==1)
+            #set($categoryList = $categories.getActiveChildrenCategoriesOrderByName($extendedFileTypeRootCategory.get(0)))
+              
+              <div id="subFolderListing" class="ui-corner-all ui-helper-clearfix">
+                
+                #foreach($categoryItem in $categoryList)
+
+                #set($list_queryPlusCategoryName = "$list_query  +(categories:$categoryItem.getCategoryVelocityVarName())")
+                  ## pull the list of items based on the query & category
+                #set($itemList = $dotcontent.pull("$list_queryPlusCategoryName", $maxLinksToDisplay, "ExtendedFile.title, Link.title"))
+                
+                ##only populate accordion with categories that have corresponding items
+				#if("$!{itemList}" != "" && $itemList.size() > 0)
+                  <h4><a href="?"><span class="headline">$categoryItem.getCategoryName() </span></a></h4>
+                  
+                  <div id="articleListing" class="clearfix accordianActivate">
+                    <table>
+          
+                        #if("$!{itemList}" != "" && $itemList.size() > 0)      
+                          #foreach($listItem in $itemList)
+                            #returnCommonElementsStructureMap($listItem)
+                              <tr>
+                                <td class="headline">#editContentlet($listItem.inode)<a href="$commonElementsStructureAsMap.link" target="_blank">$commonElementsStructureAsMap.linkText</a></td> <td class="formNumber">$commonElementsStructureAsMap.idNumber </td></tr>  
+                          
+                          #end
+                        #elseif($EDIT_MODE && $itemList.size()==0)
+                          No Content in this category.
+                        #end
+                        
+                    </table>
+                  </div>
+				#end 
+				##end if itemList not null and not empty
+				
+                #end
+              </div>
+          #else
+              #set($wpc_fileOrLinkList_Errors = "$wpc_fileOrLinkList_Errors <li>You can only have one root category for accordian lists - extendedFileTypeRootCategory.size=$!{extendedFileTypeRootCategory.size()}</li>")
+          #end
+        #else
+        
+        #end
+
+      ## if accoridian displayed by the selected folder      
+      #elseif($accordianType=="folder" )
+
+     #set($rootFolder = $website.getFolder($folderAPI.findURLPath($folderWhereItemsAreStored),$host.identifier))
+        #set($subFolders = $folderAPI.findMenuItems($rootFolder))
+    
+    #if($subFolders.size() <= 0 )
+      #set($dummy = $subFolders.add($rootFolder))
+    #elseif($subFolders.size() == 1 )
+      ##set($dummy = $subFolders.add($rootFolder))
+    #end
+    
+
+    <div id="subFolderListing" class="ui-corner-all ui-helper-clearfix">
+    #foreach($subFolder in $subFolders)
+      #if($subFolder.isShowOnMenu())
+        
+        <h4><a href="$!{subFolder.path}"><span class="headline">$subFolder.title</span></a></h4>
+        ## set the subFolder.inode to a string since it's used often throughout this script
+        #set($subFolderInode = $subFolder.inode)
+        
+        #*
+        Pull the short description for the folder from the FolderShortDescription in the folder specified
+        ONLY if it needs it
+        *#
+        #if("$!{displayShortDescription}" != "false")      
+          ## query for short description
+          #set($shortDescriptionList = $dotcontent.pull( "+structureName:FolderShortDescription +(conFolder:$!{subFolderInode} conhost:$!{subFolderInode})", 1, "modDate desc"))  
+          
+          ## check list size
+          #if("$!{shortDescriptionList}" != "" && $shortDescriptionList.size() > 0)
+            #set($short = $shortDescriptionList.get(0))
+            
+            #if("$!{maxShortDescriptionLength}" == "")
+              #set($maxShortDescriptionLength = "200")
+            #end
+            
+            <span class="teaser"><p>$UtilMethods.prettyShortenString($short.shortDescription, $math.toInteger($maxShortDescriptionLength))</p></span>
+            
+          ## list is empty
+          #else        
+            #if($EDIT_MODE)
+
+            #end
+          ## end list size check
+          #end
+        ## end display short descr check
+        #end
+
+        ##Pull all items - in this case Articles - from Sub Folder
+        #set($itemListQuery = "+(structureName:ExtendedFile structureName:Link)  +(conFolder:$!{subFolderInode} conhost:$!{subFolderInode})")
+
+        
+        #set($itemList = $dotcontent.pull("$!{itemListQuery}", $math.toInteger($maxLinksToDisplay), "ExtendedFile.title, Link.title"))
+        
+        <div id="articleListing" class="clearfix accordianActivate">
+           <table>
+          #if("$!{itemList}" != "" && $itemList.size() > 0)
+                          #foreach($listItem in $itemList)
+                            #returnCommonElementsStructureMap($listItem)
+                              <tr><td class="headline">#editContentlet($listItem.inode)<a href="$commonElementsStructureAsMap.link" target="_blank">$commonElementsStructureAsMap.linkText</a></td> <td class="formNumber"> </td></tr>  
+                          #end        
+          #elseif($EDIT_MODE && $itemList.size()==0)
+                          
+               <tr><td class="formNumber"  colspan="2">No items in this folder.</td></tr>  
+          #end
+          </table>
+        </div>
+        
+      #end
+      
+    #end
+    </div>
+  
+   ## end if accoridion display by selected folder
+  
+   ## if accoridion display by selected  all folders regardless of show on menu     
+      #elseif($accordianType=="allfolders" )
+    #set($rootFolder = $website.getFolder($folderAPI.findURLPath($folderWhereItemsAreStored),$host.identifier))
+        #set($subFolders = $folderAPI.findSubFolders($rootFolder))
+        #if($subFolders.size() == 0 )
+      #set($dummy = $subFolders.add($rootFolder))
+    #end
+        <div id="subFolderListing" class="ui-corner-all ui-helper-clearfix">
+      #foreach($subFolder in $sorter.sort($subFolders, "sortOrder"))
+          <h4><a href="$!{subFolder.path}" target="_blank"><span class="headline">$subFolder.title</span></a></h4>
+          ## set the subFolder.inode to a string since it's used often throughout this script
+          #set($subFolderInode = $subFolder.inode)
+      
+          #*
+          Pull the short description for the folder from the FolderShortDescription in the folder specified
+          ONLY if it needs it
+          *#
+          #if("$!{displayShortDescription}" != "false")      
+            ## query for short description
+            #set($shortDescriptionList = $dotcontent.pull( "+structureName:FolderShortDescription +(conFolder:$!{subFolderInode} conhost:$!{subFolderInode})", 1, "modDate desc"))  
+        
+            ## check list size
+            #if("$!{shortDescriptionList}" != "" && $shortDescriptionList.size() > 0)
+              #set($short = $shortDescriptionList.get(0))
+        
+              #if("$!{maxShortDescriptionLength}" == "")
+                #set($maxShortDescriptionLength = "200")
+              #end
+              <span class="teaser"><p>$UtilMethods.prettyShortenString($short.shortDescription, $math.toInteger($maxShortDescriptionLength))</p></span>
+              ## list is empty
+            #else        
+              #if($EDIT_MODE)
+              #end
+              ## end list size check
+            #end
+          ## end display short descr check
+          #end
+
+          ##Pull all items - in this case Articles - from Sub Folder
+          #set($itemListQuery = "+(structureName:ExtendedFile structureName:Link)  +(conFolder:$!{subFolderInode} conhost:$!{subFolderInode})")
+
+          #set($itemList = $dotcontent.pull("$!{itemListQuery}", $math.toInteger($maxLinksToDisplay), "ExtendedFile.title, Link.title"))
+      
+          <div id="articleListing" class="clearfix accordianActivate">
+          <table>
+            #if("$!{itemList}" != "" && $itemList.size() > 0)
+                #foreach($listItem in $itemList)
+                #returnCommonElementsStructureMap($listItem)
+                  <tr><td class="headline">#editContentlet($listItem.inode)<a href="$commonElementsStructureAsMap.link" target="_blank">$commonElementsStructureAsMap.linkText</a></td> <td class="formNumber"> $commonElementsStructureAsMap.idNumber </td></tr>  
+                #end        
+            #elseif($EDIT_MODE && $itemList.size()==0)
+            <tr><td class="formNumber"  colspan="2">No items in this folder.</td></tr>  
+            #end
+          </table>
+          </div>
+        
+        #end
+      
+      
+    </div>
+
+    ## end if accoridion display by selected  all folders regardless of show on menu
+
+   
+    #end
+    
+    #else
+      #set($wpc_fileOrLinkList_Errors = "$wpc_fileOrLinkList_Errors <li>if you use the accordian view, then you need to set the accordian type </li>")
+  #end
+      
+    #*
+    End accordian List Display
+    *#
+      
+      
+  ## otherwise just use the regular list display
+  #else
+
+    #*
+    Start Standard List Display
+    *#
+    
+    ## execute the query
+    #set($itemList = $dotcontent.pull("$list_query", $maxLinksToDisplay, "$sortBy"))
+    
+    ## if the list is not empty, then display
+    #if("$!{itemList}" != "" && $itemList.size() > 0)
+      ###################################
+      ## setup the column class name
+      ###################################
+      #if($howManyColumns == 1)
+        #set($colGridClassName = "grid_12")
+      #elseif($howManyColumns == 2)
+        #set($colGridClassName = "grid_6")
+      #elseif($howManyColumns == 3)
+        #set($colGridClassName = "grid_4")
+      #elseif($howManyColumns == 4)
+        #set($colGridClassName = "grid_3")
+      #else
+        #set($howManyColumns = 2)
+        #set($colGridClassName = "grid_6")
+      #end
+
+      #set($firstColClassName = "alpha")
+      #set($lastColClassName = "omega")
+        
+      #########################################################
+      ## Display Extended Files or Link
+      #########################################################
+      <div id="sectionListingTop"></div>
+      <div id="sectionListing" class="ui-helper-clearfix">
+        ##each item in this list contains a list, that list will populate each column
+        #set($columnLists = [])
+
+        ## populate columnlists with empty lists that matches then number of $howManyColumns
+        #foreach($colCount in [1..$math.toInteger($howManyColumns)])
+          #set($added = $columnLists.add([]))
+        #end
+          
+        #set($itemCount = 0)
+        #foreach($itemFromList in $itemList)
+          #set($colIndex = $math.mod($itemCount, $howManyColumns))
+          #set($added = $columnLists.get($colIndex).add($itemFromList))
+          #set($itemCount = $itemCount + 1)
+        #end
+        
+        #set($columnCount = 0)
+        #set($columnSize = $columnLists.size())
+            
+        #foreach($colList in $columnLists)
+          #set($columnCount = $columnCount + 1)
+
+          #if($columnCount == 1)
+            #set($className = "$!{colGridClassName} alpha")
+          #elseif($columnCount == $columnSize)
+            #set($className = "$!{colGridClassName} omega")
+          #else
+            #set($className = "$!{colGridClassName}")
+          #end
+        
+          <div class="${className}" style="float: left;">
+            <ul>
+              
+              #set($href = "")
+              #set($hrefText = "")
+              
+              #foreach($colListItem in $colList)
+              
+                #returnCommonElementsStructureMap($colListItem)
+                
+
+                <li>#editContentlet($colListItem.inode)
+                  <a href="$commonElementsStructureAsMap.link" target="_blank"><h4><span class="headline">$commonElementsStructureAsMap.linkText</span></h4></a>
+                </li>
+              #end
+            </ul>
+          </div>
+            
+        #end
+      </div>
+      <div id="sectionListingBottom"></div>
+        
+    ## otherwise, display empty message if edit mode
+    #else
+      #if($EDIT_MODE)
+        <div style="display: none;" class="no-items-returned">No items returned.</div>
+      #end
+    #end
+    
+    #*
+    End Standard List Display
+    *#
+    
+  ## end display view/type,e.g. accordian
+  #end
+## end error check test
+#end
+
+####################################
+## Display any errors
+####################################
+#if("$!{wpc_fileOrLinkList_Errors}" != "")
+  ## show visible error if in edit mode
+  #if($EDIT_MODE)
+  <ul>
+    $wpc_fileOrLinkList_Errors
+  </ul>
+  #else
+    <div style="display: none;">$wpc_fileOrLinkList_Errors</div>
+  #end
+#end

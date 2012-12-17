@@ -1,0 +1,142 @@
+########### Variables of article structure #############
+##
+## host1
+## headline
+## bodyText
+## sectionType
+## publishDateAndTime
+## expirationDate
+## doesNotExpire
+## sortOrder1
+## displayTeaser
+## teaser
+## attachment
+## description
+## tags
+## featureImage
+## image - asideImage
+## asideImagePosition
+## asideContent
+## gallery
+## photoView
+## galleryImageSection
+## galleryImageIds
+## galleryImageFilename
+## videoPathVideoLink
+## videoFlvFile
+## videoPath
+## videoEmbed
+## videoParameters
+## videoPosterGraphic
+## videoWidth
+## videoHeight
+## videoPosition
+## autostart
+## audioFile
+## audioFile1
+## albumCover
+## downloadable
+## relationships
+## relatedArticle
+## relatedLinks
+## relatedLinksDisplay
+## relatedLinksClass
+##
+##############################################
+
+<div id="article">
+	#############################################
+    ## Article Header - Displays Header and Publish Date
+    #############################################
+	<div class="articleHeader">
+		<h1>$!{headline}</h1>
+	    <div class="articleDetails">
+	    	<span class="publishedOn-Label">Published On  </span>
+        	<span class="publishedOn-Date">$date.format('MM/dd/yyyy', $publishDateAndTime)</span>
+        </div>
+        <!-- /end articleDetails -->
+    </div>
+	<!-- /end articleHeader -->
+	
+	#############################################
+    ## Article Teaser - Teaser of the article
+    #############################################
+	#if ($hasArticleTeaser)
+      <div class="articleTeaser">
+        $!{teaser}
+      </div>
+    #end
+	
+	#############################################
+    ## Article Content - Where you can find the bulk on an article
+    #############################################
+	<span class="articleContent">
+		$!{bodyText}
+	</span>
+	<!-- /end articleContent -->
+	
+	#############################################
+    ## Article Audio - Audio file of an article
+    #############################################
+	#if ($UtilMethods.isSet($audioFile1))
+      <div class="articleAudio">
+      	## gets the file properties from audioFile1
+      	#set($audio = $filetool.getFile($audioFile1,true))
+      	
+      	##set($pageListMap = $conApi.getContentletReferences($contentletFound, $mlhDotCmsUser, false))
+      	
+     	
+      	#if("$!{albumCoverImageURI}" != "")
+        <span class="albumCover">
+          <img src="/resize_image?path=${albumCoverImageURI}&maxw=160&maxh=160">
+        </span>
+        #end
+        <span id="audioplayer_1">Alternative content</span>
+        
+        <script type="text/javascript">  
+          AudioPlayer.embed("audioplayer_1", {
+            soundFile:         "$audio.getURI()",
+            transparentpagebg: "yes",
+            noinfo: "yes"   
+          });
+        </script>
+      </div>
+    #end
+	
+	#############################################
+    ## Related Links - Links related to the article *now on the bottom
+    #############################################
+    #if($hasRelatedLinks)
+      <div class="articleRelated">
+        <h3>Related Links</h3>
+        <ul>
+          #foreach($relatedLink in $relatedLinks)
+            <li>
+	       #parse('/mlh/rd/global/structures/content/fragments/article-related-link.vtl')
+            </li>
+          #end
+        </ul>
+      </div>
+    #end
+    <!-- /end articleRelated -->
+    
+    #############################################################
+    ## Get any related Contacts for this article and display
+    #############################################################
+    #set($contacts = $dotcontent.pullRelated("NewsArticle-Contact", "$!{URLMapContent.identifier}", null, false, 0, null))
+    #if("$!{contacts}" != "" && $contacts.size() > 0)
+      <div class="articleContact">
+        <span class="contactLabel">For More Informaiton Please Contact:</span>
+        <span class="contactPerson">
+          <a href="mailto:$!{contact.email}">
+            $!{contact.firstName}&nbsp;$!{contact.lastName}
+          </a>
+        </span>
+        <span class="contact-Person">$!{contact.phone}</span>
+      </div>
+     #end
+     <!-- /end articleContact -->
+     
+     		
+</div>
+<!-- /end article -->

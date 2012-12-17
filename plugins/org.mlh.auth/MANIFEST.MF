@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Plugin-Name: mlh custom auth
+Plugin-Version: 1.0
+Author: Greg Jordan & Stephen Blalock

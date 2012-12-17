@@ -1,0 +1,46 @@
+########### Variables of leadership-bio structure #############
+##
+## host1
+## firstName
+## lastName
+## middleInitial
+## suffix
+## bodyText
+## image
+## tags
+## keywords
+##
+##############################################
+
+
+#if("$!{firstName}" != "")
+    <div id="leadershipBio">
+
+		<div class="leadershipName">     
+			<span class="first">$!{firstName}</span>
+			<span class="middle">$!{middleInitial}</span>
+			<span class="last">$!{lastName}</span>
+			<span class="suffix">$!{suffix}</span>
+		</div>
+    
+		<div class="position">$!{jobTitle}</div>
+		
+	</div>
+    
+	<div class="leadershipImage span4">
+		<img src="/resize_image?path=$!{imageImageURI}&maxw=250&maxh=240" alt="$!{imageImageTitle}" title="$!{imageImageTitle}">
+	</div>
+      
+	<div class="bodyText span5">
+		$!{bodyText}
+	</div>
+#else
+	#if($EDIT_MODE)
+		<blockquote>
+			<h3>We are sorry, we cannot find the Leadership Bio for which you are looking</h3>
+		</blockquote>
+	#end
+#end
+  
+##dotParse('//$!{SUBDOMAIN_PREFIX}.resources.org/application/mlh_redirect_fix.vtl')
+#parse('/mlh/global/mlh_redirect_fix.vtl')

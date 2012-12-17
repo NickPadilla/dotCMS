@@ -1,0 +1,42 @@
+#set($mainMap = $contents.getEmptyMap())
+
+#set($fileIds = $request.getParameter("fileIds"))
+
+#if("$!{fileIds}" != "")
+
+	#if($fileIds.indexOf(",") > -1)
+		#set($fileIdArray = $fileIds.split(","))
+		#foreach ($fileId in $fileIdArray)
+			#set($fileFromId = $filetool.getFile($fileId, true))
+			#if("$!{fileFromId}" != "")
+				#set($filePathURI = $fileFromId.getPath() + $fileFromId.getFileName())
+				#if("$!{filePathURI}" != "")
+					#set($res = $mainMap.put($fileId, $filePathURI))
+				#else
+					#set($res = $mainMap.put($fileId, "error: no URI"))
+				#end
+			#else
+				#set($res = $mainMap.put($fileId, "error: no File"))
+			#end
+		#end
+	#else
+		#set($fileFromId = $filetool.getFile($fileIds, true))
+		#if("$!{fileFromId}" != "")
+			#set($filePathURI = $fileFromId.getPath() + $fileFromId.getFileName())
+			#if("$!{filePathURI}" != "")
+				#set($res = $mainMap.put($fileIds, $filePathURI))
+			#else
+				#set($res = $mainMap.put($fileIds, "error: no URI"))
+			#end
+		#else
+			#set($res = $mainMap.put($fileIds, "error: no File"))
+		#end
+	#end
+
+#else
+	#set($res = $mainMap.put("error", "fileIds NOT specified"))
+#end
+
+$json.generate($mainMap)
+
+

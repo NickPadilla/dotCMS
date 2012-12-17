@@ -1,0 +1,36 @@
+#set($leadershipBio = $URLMapContent)
+
+#if("$!{leadershipBio}" != "" && $leadershipBio.inode)
+	#editContentlet($leadershipBio.inode)
+
+	<div id="leadershipBio">
+
+		<div class="leadershipName">     
+			<span class="first">$!{leadershipBio.firstName}</span>
+			<span class="middle">$!{leadershipBio.middleInitial}</span>
+			<span class="last">$!{leadershipBio.lastName}</span>
+			<span class="suffix">$!{leadershipBio.suffix}</span>
+		</div>
+    
+		<div class="position">$!{leadershipBio.jobTitle}</div>
+		
+	</div>
+    
+	<div class="leadershipImage grid_4 alpha">
+		<img src="/resize_image?path=$!{leadershipBio.imageImageURI}&maxw=250&maxh=240" alt="$!{leadershipBio.imageImageTitle}" title="$!{leadershipBio.imageImageTitle}">
+	</div>
+      
+	<div class="bodyText grid_8 omega">
+		$!{leadershipBio.bodyText}
+	</div>
+    
+#else
+	#if($EDIT_MODE)
+		<blockquote>
+			<h3>We are sorry, we cannot find the Leadership Bio for which you are looking</h3>
+		</blockquote>
+	#end
+#end
+  
+##dotParse('//$!{SUBDOMAIN_PREFIX}.resources.org/application/mlh_redirect_fix.vtl')
+#parse('/mlh/global/mlh_redirect_fix.vtl')

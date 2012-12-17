@@ -1,0 +1,3 @@
+<project name="mlh custom auth" default="build">
+    <import file="../common.xml"/>
+</project>

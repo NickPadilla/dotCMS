@@ -1,0 +1,169 @@
+#macro (showNavigationLevelMLH $menuLevel $levelPath $level $menuSpans $firstItemClass $lastItemClass $menuIdPrefix $parentFolderInode $parentFolderContentListItems)
+  #set ($VTLSERVLET_DECODED_URI = "${UtilMethods.decodeURL($VTLSERVLET_URI)}")
+  ##set($res = $dotlogger.error("**************** levelPath = ${levelPath}"))
+  ####################################################
+  ## Then a detail page url is what has loaded this page. Make sure to mark
+  ## 'active' on the folder that contains $URLMapContent.host1
+  ####################################################
+  
+  #if (("$!{menuLevel}" != "" && $menuLevel.size() > 0) && ($UtilMethods.inString($overrideCurrentPath, $levelPath) || $UtilMethods.inString($VTLSERVLET_DECODED_URI, $levelPath) || ($UtilMethods.isSet($openAllLevels) && $openAllLevels == true)))
+    <ul>
+    #foreach ($menuItem in $menuLevel)
+      #if (!$UtilMethods.isSet($menuItem.linkType))
+        #set($menuItem.linkType = "")
+      #end
+      #if (($menuItem.type == "LINK") && ($menuItem.linkType == "CODE"))
+        $menuItem.path
+      #else
+        #############################################
+        ## new MLH nav code
+        #############################################
+        #set($parentFolderURLPath = "mlh_parent_path")
+        #if($MLH_LEFT_NAV_CONTENT_AS_LINK == "true" && "$!{parentFolderInode}" != "")
+          #set($parentFolderURLPath = $folderAPI.findURLPath($parentFolderInode))
+        #end
+        
+	#set($liClasses = "")
+        #set ($li = "<li")
+        #if ((($menuItem.type == "LINK") && ($UtilMethods.inString($VTLSERVLET_DECODED_URI, "${menuItem.protocal}${menuItem.name}"))) || (($menuItem.type == "FOLDER") && ($UtilMethods.inString($VTLSERVLET_DECODED_URI, "${menuItem.path}") || ($UtilMethods.isSet($openAllLevels) && $openAllLevels == true) || ($UtilMethods.inString($VTLSERVLET_DECODED_URI, "${parentFolderURLPath}")) || $UtilMethods.inString($overrideCurrentPath, "${menuItem.path}") )) || (($menuItem.type != "LINK") && ($menuItem.type != "FOLDER") && ($UtilMethods.inString($VTLSERVLET_DECODED_URI, "${menuItem.path}${menuItem.name}"))))
+          #set($activeAndOrSelectedClass = "active")
+          #if("$!{overrideCurrentPath}" != "")
+            #set($vtlServletFolderPath = $overrideCurrentPath.substring(0, $overrideCurrentPath.lastIndexOf('/')))
+          #else
+            #set($vtlServletFolderPath = $VTLSERVLET_DECODED_URI.substring(0, $VTLSERVLET_DECODED_URI.lastIndexOf('/')))
+          #end
+          #set($vtlServletFolderPath = "${vtlServletFolderPath}/")
+          #if("$!{vtlServletFolderPath}" == "$!{menuItem.path}")
+            #set($activeAndOrSelectedClass = "${activeAndOrSelectedClass} selected")
+          #end
+	  #set($liClasses = "${activeAndOrSelectedClass} ")
+        #end
+        #if ($menuItem.type == "LINK")
+          #set ($link = "${menuItem.protocal}${menuItem.name}")
+        #elseif ($menuItem.type == "FOLDER")
+          #set ($link = "${menuItem.path}")
+        #else
+          #set ($link = "${menuItem.path}$!{menuItem.name}") 
+        #end
+
+        #set ($folderId = "")
+        #if ($menuItem.type == "FOLDER")
+          #set ($folderId = "${menuItem.name}")
+          #if ($UtilMethods.isSet($menuIdPrefix))
+            #set ($folderId = "${menuIdPrefix}_${folderId}")
+          #end
+          #set ($folderId = "id='${folderId}'")
+        #end
+
+        #set ($styleClass = " ")
+        #if ($menuItem.isFirstItem && $UtilMethods.isSet($firstItemClass))
+          #set ($styleClass = "class='${firstItemClass}_${level}'")
+	  #set($liClasses = "${liClasses} ${firstItemClass}")
+        #elseif ($menuItem.isLastItem && $UtilMethods.isSet($lastItemClass))
+          #set ($styleClass = "class='${lastItemClass}_${level}'")
+	  #set($liClasses = "${liClasses} ${lastItemClass}")
+        #end
+
+
+        #set ($target = "")
+        #if (($menuItem.type == "LINK") && $UtilMethods.isSet($menuItem.target))
+          #set ($target = "target='${menuItem.target}'")
+        #end
+
+	#if("${liClasses}" != "")
+		#set($liClasses = "class='${liClasses}'")
+	#end
+
+        #if ($menuItem.type == "LINK")
+          #set ($li = "${li} ${folderId} ${liClasses}><a ${styleClass} href='$!{link}' ${target}>")
+        #else
+          #set ($li = "${li} ${folderId} ${liClasses}><a ${styleClass} href='${UtilMethods.encodeURIComponent($link)}' ${target}>")
+        #end
+        
+        #if ($menuSpans)
+          #set ($li = "${li} <span>$menuItem.title</span>")
+        #else
+          #set ($li = "${li} $menuItem.title")
+        #end
+        
+        #set ($li = "${li}</a>")
+        
+        #if ($menuItem.type == "FOLDER")
+                $li        
+          ####################################################################
+          ## Build li (s) and pass to recursive call, where the li (s) will be appended to any submenu items
+          ####################################################################
+          
+          #if($MLH_LEFT_NAV_CONTENT_AS_LINK == "true" && "$!{menuItem.folderInode}" != "")
+            #set($contentList = $dotcontent.pull("+structureName:NewsArticle +conFolder:$!{menuItem.folderInode}", 100, "sortOrder1"))
+            #if("$!{contentList}" != "" && $contentList.size() > 0)
+              #if("$!{MLH_DEBUG}" == "true")
+                #set($contentUrls = "")
+              #end
+              #set($folderContentListItems = "")
+              #foreach($item in $contentList)
+                #set($activeClass = "")
+                #if("!${URLMapContent.host1}" != "" && "!${URLMapContent.host1}" == "$!{item.host1}")
+                  #set($activeClass = "class='active'")
+                #end
+                #set($folderContentListItems = "$folderContentListItems <li $!{activeClass} id='mlh_$!{item.urlTitle}'><a href='/$!{item.urlMapRoot.selectValue}/$!{item.urlTitle}' >$!{item.title}</a></li>")
+                
+                #if("$!{MLH_DEBUG}" == "true")
+                  #set($contentUrls = "/$!{item.urlMapRoot.selectValue}/$!{item.urlTitle}, $contentUrls")
+                #end
+              #end
+              
+              #set($menuItemFolderInode = "")
+              #if("$!{folderContentListItems}" != "")
+                #set($menuItemFolderInode = $menuItem.folderInode)
+              #end
+              
+              #if("$!{MLH_DEBUG}" == "true")
+                <input type="hidden" class="mlh-debug_folder-inode" value="$!{menuItemFolderInode}"/>
+                <input type="hidden" class="mlh-debug_content-urls" value="$!{contentUrls}"/>
+              #end
+              
+              #showNavigationLevelMLH($menuItem.submenu $menuItem.path $math.add($level, 1) $menuSpans $firstItemClass $lastItemClass $menuIdPrefix $menuItemFolderInode $folderContentListItems)
+              
+            #else
+              #showNavigationLevelMLH($menuItem.submenu $menuItem.path $math.add($level, 1) $menuSpans $firstItemClass $lastItemClass $menuIdPrefix "" "")
+            #end
+          #else
+            #showNavigationLevelMLH($menuItem.submenu $menuItem.path $math.add($level, 1) $menuSpans $firstItemClass $lastItemClass $menuIdPrefix "" "")
+          #end
+          
+          
+          
+          </li>
+        #else
+          $li</li>
+        #end
+      #end
+      
+    #end
+      #if($MLH_LEFT_NAV_CONTENT_AS_LINK == "true" && "$!{parentFolderContentListItems}" != "" && "$!{parentFolderInode}" != "")
+        $!{parentFolderContentListItems}
+      #end
+    </ul>
+    
+  #else
+    #if($MLH_LEFT_NAV_CONTENT_AS_LINK == "true" && "$!{parentFolderContentListItems}" != "" && "$!{parentFolderInode}" != "" && (("$!{menuLevel}" != "" && $menuLevel.size() < 1) && ($UtilMethods.inString($VTLSERVLET_DECODED_URI, $levelPath) || ($UtilMethods.isSet($openAllLevels) && $openAllLevels == true))))
+      <ul>
+        $!{parentFolderContentListItems}
+      </ul>
+    #end
+  #end
+#end
+
+
+#set($parentFolderInode = "")
+#set($folderContentListItems = "")
+ 
+#if("$!{firstItemClass}" == "")
+  #set($firstItemClass = "first")
+#end
+#if("$!{lastItemClass}" == "")
+  #set($lastItemClass = "last")
+#end
+  
+#showNavigationLevelMLH($navigationItems '/' 1 $menuSpans $firstItemClass $lastItemClass $menuIdPrefix $parentFolderInode $folderContentListItems)

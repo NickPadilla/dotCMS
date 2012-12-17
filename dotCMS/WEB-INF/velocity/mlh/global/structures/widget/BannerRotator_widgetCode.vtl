@@ -1,0 +1,121 @@
+<!-- Set Default Width -->
+#if(!$width)
+   #set ($width = "974")
+#end
+
+<!-- Set Default Height -->
+#if(!$height)
+   #set ($height = "250")
+#end
+
+<link rel="stylesheet" type="text/css" href="/global2012/js/plugins/jquery-slider/themes/carbono/jquery.slider.css" />
+
+
+<script type="text/javascript" src="/global2012/js/plugins/jquery-slider/jquery.slider.min.js"></script>
+
+  <script type="text/javascript">
+    jQuery.fx.interval = 100;
+    
+    jQuery(document).ready(function($) {
+      $(".slider").slideshow({
+        selector   : false,
+        timer      : false,
+        width      : $!{width},
+        height     : $!{height},
+        transition : 'fade',
+        pauseOnHover    : true,
+        control         : false,
+        delay      : 6000 // in ms. Time between slides
+      });
+      
+      // playing with events:
+  
+	  $(".slider").bind("sliderChange", function(event, curSlide) {
+	    $(curSlide).children(".caption").hide();
+	  });
+	  
+	  $(".slider").bind("sliderTransitionFinishes", function(event, curSlide) {
+	    $(curSlide).children(".caption").fadeIn(500);
+	  });
+    });
+  </script>
+<div class="banner widget" style="margin-bottom:10px;">
+
+    <div class="slider $style">
+      #if($banner1 != "")
+      <div>
+        <a href="$!{banner1Link}"><img src="/resize_image?path=/dotAsset/$!{banner1}&w=$width&h=$height" alt="$!{banner2AltTag}" />
+        	<div>
+        		<span class="caption banner-msg">
+        			$!{messageSlide1}
+        			<span class="point"></span>
+        		</span>
+        	</div>
+
+        </a>
+      </div>
+      #else
+      <div>
+      	$specialHtml
+      </div>
+      #end
+      
+      #if($banner2 != "")
+      <div>
+        <a href="$!{banner2Link}"><img src="/resize_image?path=/dotAsset/$!{banner2}&w=$width&h=$height" alt="$!{banner2AltTag}" />
+        	<div>
+        		<span class="caption banner-msg">
+        			$!{messageSlide2}
+        		</span>
+        	</div>
+        	<span class="point">
+        	</span>
+        </a>
+      </div>
+      #end
+      
+      #if($banner3 != "")
+      <div>
+        <a href="$!{banner3Link}"><img src="/resize_image?path=/dotAsset/$!{banner3}&w=$width&h=$height" alt="$!{banner3AltTag}" />
+        	<div>
+        		<span class="caption banner-msg">
+        			$!{messageSlide3}
+        		</span>
+        	</div>
+        	<span class="point">
+        	</span>
+        </a>
+      </div>
+      #end
+      
+      #if($banner4 != "")
+      <div>
+        <a href="$!{banner4Link}"><img src="/resize_image?path=/dotAsset/$!{banner4}&w=$width&h=$height" alt="$!{banner4AltTag}" />
+        	<div>
+        		<span class="caption banner-msg">
+        			$!{messageSlide4}
+        		</span>
+        	</div>
+        	<span class="point">
+        	</span>
+        </a>
+      </div>
+      #end
+      
+      #if($banner5 != "")
+      <div>
+        <a href="$!{banner5Link}"><img src="/resize_image?path=/dotAsset/$!{banner5}&w=$width&h=$height" alt="$!{banner5AltTag}" />
+        	<div>
+        		<span class="caption banner-msg">
+        			$!{messageSlide5}
+        		</span>
+        	</div>
+        	<span class="point">
+        	</span>
+        </a>
+      </div>
+      #end
+      
+    </div>
+    
+</div>

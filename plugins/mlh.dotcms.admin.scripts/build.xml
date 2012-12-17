@@ -1,0 +1,129 @@
+<project name="mlh dotCMS admin scripts plugin" default="build-with-jsp">
+	<import file="../common.xml" />
+
+	<property name="temp.jsp" value="temp_jsp" />
+	<property name="temp.jsp.src" value="temp_jsp_src" />
+	
+	<property name="default.jsp" value="../../dotCMS/" />
+	<property name="dotcms.jsp" value="dotcms_jsp" />
+	<property name="dotcms.compiled.jsp" value="../../build/jsp/" />
+
+	<path id="plugin-files-classpath">
+		
+		<fileset dir="../../dotCMS/WEB-INF/lib">
+			<include name="**/*.jar" />
+			<exclude name="**/dotcms*.jar" />
+		</fileset>
+		<fileset dir="lib">
+			<include name="**/*.jar" />
+		</fileset>
+		
+		<pathelement location="${java.home}/../lib/tools.jar"/>
+		
+		<fileset dir="../../tomcat/bin">
+			<include name="**/*.jar" />
+		</fileset>
+		
+		<fileset dir="../../tomcat/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		
+		<pathelement path="${build.classes}" />
+		<pathelement path="../../build/classes" />
+		<pathelement path="../../dotCMS/WEB-INF/classes" />
+	</path>
+	
+	<target name="build-with-jsp" depends="clean,build,dotcms-jsp,jar-build-folder" />
+	
+	
+	<target name="dotcms-jsp">
+		
+		<taskdef classname="com.dotmarketing.util.jasper.DotJasperTask" name="jasper2" >
+			<classpath id="jspc.classpath" refid="plugin-files-classpath">
+			</classpath>
+		</taskdef>
+		
+		<delete dir="${temp.jsp.src}" failonerror="false"/>
+		<delete dir="${temp.jsp}" failonerror="false"/>
+				
+		<mkdir dir="${temp.jsp}" />
+		<mkdir dir="${temp.jsp.src}" />
+		
+		<copy todir="${temp.jsp}">
+			<fileset dir="${default.jsp}">
+				<include name="**/*.jsp" />
+				<include name="**/*.css" />
+				<include name="**/*.js" />
+				<include name="**/*.json" />
+				<exclude name="html/plugins/**"/>
+				<exclude name="mlh-service/**"/>
+				<exclude name="mlh-services/**"/>
+				<exclude name="mlh-migration/**"/>
+				<exclude name="mlh-dotcms-tools/**"/>
+			</fileset>
+		</copy>
+		
+		<copy todir="${temp.jsp}/WEB-INF/" >
+			<fileset dir="${default.jsp}/WEB-INF/"/>
+		</copy>
+			
+		<copy todir="${temp.jsp}" overwrite="true">
+			<fileset dir="${dotcms.jsp}">
+				<include name="**/*.jsp" />
+			</fileset>
+		</copy>
+		
+		<!-- uribase="../../dotCMS"   -->
+		<jasper2 validateXml="false" 
+			uriroot="${temp.jsp}" javaEncoding="UTF-8" 
+			webXmlFragment="${temp.jsp}/generated_web.xml" outputDir="${temp.jsp.src}/">
+		</jasper2>
+			
+		<fileset id="dotcms.jsp.contents" dir="${dotcms.jsp}"/>
+		<property name="prop.dotcms.jsp.contents" refid="dotcms.jsp.contents"/>
+	
+		<echo file="${temp.jsp}/file_list">${prop.dotcms.jsp.contents}</echo>
+	
+		<!-- Break up in multiple lines -->		 
+		<replace file="${temp.jsp}/file_list" token=";" value="${line.separator}"/>
+		<replace file="${temp.jsp}/file_list" token="_" value="_005f"/>
+		<replaceregexp file="${temp.jsp}/file_list"
+             match=".jsp$"
+             replace="_jsp.java"
+             byline="true"/>
+		<replaceregexp file="${temp.jsp}/file_list"
+             match="^"
+             replace="org/apache/jsp/"
+             byline="true"/>
+	
+		<!-- Delete what we don't need -->
+		<delete>
+    		<fileset dir="${temp.jsp.src}" >				
+    			<excludesfile name="${temp.jsp}/file_list"/>
+			</fileset>			
+		</delete>
+					
+		<javac debug="true" debuglevel="lines,vars,source" 
+			fork="true" srcdir="${temp.jsp.src}" destdir="${build.classes}" source="1.5" 
+			target="1.5" compiler="javac1.5" nowarn="true" optimize="true" 
+			memoryinitialsize="256m" memorymaximumsize="512m">
+			<classpath refid="plugin-files-classpath" />
+		</javac>
+				
+	</target>
+	
+	<target name="jar-build-folder">
+		<jar jarfile="${jar.file}" manifest="${manifest.file}">
+			<fileset dir="${build.classes}" />
+			<zipfileset dir="${conf.dir}" prefix="conf" />
+			<zipfileset dir="${build.conf}" prefix="conf" />
+			<zipfileset dir="static_files" prefix="static_files" excludes="**/thumb.db" />
+			<zipfileset dir="static_velocity" prefix="static_velocity" />
+			<zipfileset dir="lib" prefix="lib" />
+			<zipfileset dir="${jsp.dir}" prefix="jsp" />
+			<zipfileset dir="${tinymce.dir}" prefix="tiny_mce" />
+			<zipfileset dir="${dotcms.dir}" prefix="dotcms" excludes="**/thumb.db" />
+		</jar>
+	</target>
+	
+</project>

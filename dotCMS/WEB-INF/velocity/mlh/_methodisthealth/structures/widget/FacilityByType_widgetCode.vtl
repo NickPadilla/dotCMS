@@ -1,0 +1,130 @@
+############### Variables ##########################################################################
+## --- widget variables ---------------------------------
+## $hostFolder - folder or host id where event is stored
+## $selectType - select the Facilities by type
+##
+## --- type variables ------------------------------------
+## $typeName - displays the type name
+## $typeDescription - displays the type description
+## $limitLocationsTo - limits the number of facilities returned
+##
+## --- facility variables --------------------------------
+## $facilityLogo -
+## $image - "true" or "false"
+## $address -
+## $website -
+## $show - list of fields to show (values = facilityPicture, logo, title, address, hours, website, description, specialties, physicians)
+## $description
+##
+################################################################################################
+
+#################
+## setup query for pull
+#################
+
+#set($query = "+structureName:Facility")
+
+#if($selectType == "Hospital")
+  #set($query = "$query +Facility.type1:*Hospital*")
+#elseif($selectType == "Minor Medical Center")
+  #set($query = "$query +Facility.type1:*Minor Medical Center*")
+#elseif($selectType == "Wound Healing Center")
+  #set($query = "$query +Facility.type1:*Wound Healing Center*")
+#elseif($selectType == "Surgery Center")
+  #set($query = "$query +Facility.type1:*Surgery Center*")
+#elseif($selectType == "Sleep Disorder Center")
+  #set($query = "$query +Facility.type1:*Sleep Disorder Center*")
+#elseif($selectType == "Diagnostic Center")
+  #set($query = "$query +Facility.type1:*Diagnostic Center*")
+#elseif($selectType == "myMD Clinics")
+  #set($query = "$query +Facility.type1:*myMD Clinics*")
+#elseif($selectType == "Specialists")
+  #set($query = "$query +Facility.type1:*Specialists*")
+#elseif($selectType == "Cancer Treatment Centers")
+  #set($query = "$query +Facility.type1:*Cancer Treatment Centers*")
+#elseif($selectType == "Hospice")
+  #set($query = "$query +Facility.type1:*Hospice*")
+#else(error:no proper selection)
+#end
+
+#set($query="$query +live:true")
+
+  ###################################################
+  ## pull the content and only show type information has been specified by the widget
+  ###################################################
+  
+              <div id="$typeNameUrl" class="grid_14 facilityType $styleOveride">
+                  
+                  #if ("$showTitle" == "true")
+                    <h2>$typeName</h2>
+                  #else 
+                   # 
+                  #end
+                    <p>$typeDescription</p>
+                <div style="display: none">$query</div>
+                </div>
+                
+                <div class="grid_14 alpha omega locations">
+                  ###################################################
+                  ## pull the content and only show the locations by type that has been specified by the widget
+                  ###################################################
+                  
+                  #foreach ($content in $dotcontent.pull($query, 0, "Facility.title"))
+                  
+                  #if($howManyColumns == "4")
+                  <div class="grid_3 facilityBox ">
+                      <h3 class="facilityName"><a href="/locations/$!{content.urlTitle}">
+                          ## Show Logo otherwise show Hospital Name
+                            #if("$!{show.contains('logo')}" == "true" && "$!{content.facilityLogo}" != "")
+                      <img src="/resize_image?path=$!{content.facilityLogo.uri}&w=240&h=50" alt="$content.title">
+                            #else
+                              $content.title
+                            #end
+                        </a></h3>
+                        <span class="facilityImage">
+                          #if("$!{show.contains('facilityPicture')}" == "true" && "$!{content.image}" != "")
+                                <img src="/resize_image?path=$!{content.image.uri}&w=320&h=300">
+                            #end
+                        </span>  
+                        <div class="facilityDetails grid_3">                      
+                            <span class="facilityStreet">$content.address</span>
+                            <span class="facilityCity">$content.city, $content.state.selectValue $content.zip</span>
+                            <span class="facilityPhone">$content.phone</span>
+                        </div>
+                     </div>
+                     #else
+                     <div class="grid_6 alpha facilityBox">
+                      <h3 class="facilityName"><a href="/locations/$!{content.urlTitle}">
+                          ## Show Logo otherwise show Hospital Name
+                            #if("$!{show.contains('logo')}" == "true" && "$!{content.facilityLogo}" != "")
+                      <img src="/resize_image?path=$!{content.facilityLogo.uri}&w=240&h=50" alt="$content.title">
+                            #else
+                              $content.title
+                            #end
+                        </a></h3>
+                        <span class="facilityImage">
+                          #if("$!{show.contains('facilityPicture')}" == "true" && "$!{content.image}" != "")
+                                <img src="/resize_image?path=$!{content.image.uri}&w=320&h=300">
+                            #end
+                        </span>  
+                        <div class="facilityDetails grid_3">                      
+                            <span class="facilityStreet">$content.address</span>
+                            <span class="facilityCity">$content.city, $content.state.selectValue $content.zip</span>
+                            <span class="facilityPhone">$content.phone</span>
+                        </div>
+                        <div class="facilityServices grid_2 omega">
+                             <span class="facilityMapIt">
+                               <a href="$!{content.urlTitle}#tab-map">
+                                  <img src="/meth/images/facility/btn_MapIt.png">
+                                </a>
+                             </span>
+                        </div>
+                     </div>
+                     #end
+                    #end
+                    
+                  </div>
+                  
+                  
+                
+                

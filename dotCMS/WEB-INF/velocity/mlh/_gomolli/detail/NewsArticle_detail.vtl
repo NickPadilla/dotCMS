@@ -1,0 +1,195 @@
+
+#set($article = $URLMapContent)
+
+#if($EDIT_MODE)
+    <blockquote>
+        <h1 class="alert">DETAIL PAGE -> You can click <b>Edit</b> to change the content</h1>
+    </blockquote>
+#end
+
+
+##############################
+## Set defaults parameters
+##############################
+#set($width = '700')
+#if($UtilMethods.isSet($article.videoWidth))
+  #set($width = $article.videoWidth)
+#end
+
+#set($height = '365')
+#if($UtilMethods.isSet($article.videoHeight))
+  #set($height = $article.videoHeight)
+#end
+
+#set($autostart = "false")
+#if($UtilMethods.isSet($article.autoStart))
+  #set($autostart = "{article.autoStart}")
+#end
+
+#if($UtilMethods.isSet($article.videoPosterGraphicImageURI))
+  #set($image = $article.videoPosterGraphicImageURI)
+#end
+
+
+
+<div id="article_Content" class="clearfix">
+
+  #if("$!{article}" != "" && $article.inode)
+    #editContentlet($article.inode)
+    <div class="article_Header">
+      <h1>$!{article.headline}</h1>
+      <div class="article_Info">Added $!{article.publishDateAndTime}</div>
+    </div>
+    
+    #if ($UtilMethods.isSet($article.videoFlvFile))
+      <div class="widget">
+        #videoPlayer($article.videoFlvFile)
+      </div>
+    #end
+
+    #if ($UtilMethods.isSet($article.videoPath))
+      <div class="widget">
+        #videoPlayer("$article.videoPath")
+      </div>
+    #end
+
+    #if ($UtilMethods.isSet($article.videoEmbed))
+      <div class="widget">
+        $!{article.videoEmbed}
+      </div>
+    #end
+    
+
+
+    
+
+    #set($relatedLinks = $contents.getRelatedChildContent("NewsArticle-Link", "${article.inode}"))
+      
+    #set($hasRelatedLinks = ($relatedLinks && $relatedLinks.size() > 0))
+    #set($hasArticleTeaser = ($UtilMethods.isSet($article.teaser) && "$!{article.displayTeaser}" != "false"))
+
+    
+    #if ($UtilMethods.isSet($article.audioFile1))
+      <div id="article_Audio" class="widget">
+      
+        <h4>Audio</h4>
+        <span class="albumCover">
+          <img src="/resize_image?path=${article.albumCoverImageURI}&maxw=160&maxh=160">
+        </span>
+        <span id="audioplayer_1">Alternative content</span>
+        
+        <script type="text/javascript" src="/global/flash/audioPlayer/audio-player.js"></script>
+        
+        <script type="text/javascript">  
+          AudioPlayer.setup("/global/flash/audioPlayer/player.swf", {  
+            width: 160  
+          });  
+        </script>
+        
+        <script type="text/javascript">  
+          AudioPlayer.embed("audioplayer_1", {
+            soundFile:         "${article.audioFile1ImageURI}",
+            transparentpagebg: "yes",
+            noinfo: "yes"   
+          });
+        </script>
+        
+      </div>
+    #end
+    
+    #############################################
+    ## BEGIN div wrapper for article teaser and related links
+    #############################################
+    #if($hasArticleTeaser || $hasRelatedLinks)
+        <div class="article-aside grid_4 push_8 alpha">
+    #end
+          
+    #if ($hasArticleTeaser)
+      <div id="article_Teaser" class="teaser">
+        <h4>Article Teaser</h4>
+        $!{article.teaser}
+      </div>
+    #end
+
+    #if($hasRelatedLinks)
+      <div id="article_Related" class="menu menu_Related $!{article.relatedLinksClass}">
+        <h4>$!{article.relatedLinksDisplay}</h4>
+        <ul>
+          #foreach($relatedLink in $relatedLinks)
+            <li>
+              #parse('/mlh/global/content-display/fragments/NewsArticle_relatedLink_display.vtl')
+              ##<div style="display: none;">#fileSizeFormatter($relatedLink.pageOrFile) $fileSizeOutput <br/>inode = $relatedLink.inode <br/>identifier = $relatedLink.identifier</div>
+            </li>
+          #end
+        </ul>
+      </div>
+    #end
+    
+    #if($hasArticleTeaser || $hasRelatedLinks)
+      </div>
+    #end
+    #############################################
+    ## END div wrapper for article teaser and related links
+    #############################################
+    
+    #if ($UtilMethods.isSet($article.bodyText))
+      #set($gridClass = "grid_12")
+      #if($hasArticleTeaser || $hasRelatedLinks)
+        #set($gridClass = "grid_8 pull_4 omega")
+      #end
+    
+      <div id="article_Text" class="$gridClass">
+        #if("$!{article.imageImageURI}" != "")
+        <div class="article_AsideImg">   
+          <img src="/resize_image?path=$!{article.imageImageURI}&maxw=250&maxh=200" alt="$!{article.imageImageTitle}" title="$!{article.imageImageTitle}">
+        </div>
+        #end
+        $!{article.bodyText}
+      </div>
+    #end
+    
+      
+    
+    ## ONLY show image gallery if both the ids and filenames are set
+    #if ($UtilMethods.isSet($article.galleryImageIds) && $UtilMethods.isSet($article.galleryImageFilenames))
+    
+      #set($imageIds = $article.galleryImageIds.split(","))
+      #set($imageFilenames = $article.galleryImageFilenames.split(","))
+      #set($imgIdCount = 0)
+      ## set the maxh and maxw values for the "resize_image" url
+      #set($maxHeight = 100)
+      #set($maxWidth = 300)
+    
+      #############################################################
+      ## DISPLAYS an Image Gallery
+      #############################################################
+      #if("$!{article.photoView}" == "gallery")
+        ## TODO: Lou - modify the file below to display photos in a gallery
+        #parse('/mlh/_gomolli/detail/NewsArticle_photoGallery.vtl')
+      #end
+      
+      #############################################################
+      ## DISPLAYS an Image Carousel
+      #############################################################
+      #if("$!{article.photoView}" == "carousel")
+        ## TODO: Lou - modify the file below to display photos in a carousel
+        #parse('/mlh/_gomolli/detail/NewsArticle_photoCarousel.vtl')
+      #end
+      
+    #end
+  #else
+    #if($EDIT_MODE)
+      <blockquote>
+        <h1 class="alert">If you see this, do NOT click edit</h1>
+        <h3>We are sorry, we cannot find the news you are looking for</h3>
+      </blockquote>
+    #end
+  #end
+  
+  
+  
+  
+</div>
+
+  #parse('/mlh/global/mlh_redirect_fix.vtl')
+ 

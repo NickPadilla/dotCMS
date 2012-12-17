@@ -1,0 +1,204 @@
+<link href="/global/css/jqueryui/ui-lightness/jquery-ui-1.8.13.sortable.css" type="text/css" rel="stylesheet"/>
+
+<style>
+  #sortable { list-style-type: none; margin: 15px 0 0 0; padding: 0; width: 60%; }
+  #sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 110px; width: 680px; }
+  #sortable li span { position: absolute; margin-left: -1.3em; }
+  #add-image-to-gallery { margin: 15px;}
+  a.remove-image-from-gallery { color: #AA2C35 !important; margin: -5px 5px 0 220px;  position: absolute;}
+  span.image-count {margin-top: 40px; margin-left: 0px;}
+  span.sorted-filename {color: black; font-size: 10px; margin-left: 10px !important;}
+</style>
+
+##<script type="text/javascript" src="/js/load_javascript.js"></script>
+
+<script type="text/javascript" src="/global/js/jquery-ui-1.8.13.sortable.min.js"></script>
+  
+  
+<script type="text/javascript">
+  var getUrlVars = function(urlToParse) {
+    var vars = [], hash;
+    
+    var valToSlice = urlToParse != null ? urlToParse : window.location.href;
+    
+    var hashes = valToSlice.slice(valToSlice.indexOf('?') + 1).split('&');
+    for(var i = 0; i < hashes.length; i++) {
+      hash = hashes[i].split('=');
+      vars.push(hash[0]);
+      vars[hash[0]] = hash[1];
+    }
+    return vars;
+  };
+  
+  
+  #########################################
+  ## Initialize and setup sortable list
+  ##
+  #########################################
+  
+  var sortInit = false;
+  
+  //var loadImageGallery = function(){
+  
+  mlhjq(document).ready(function(){
+  
+  //var initializeJq = function(){
+    //make dojo play nice
+    
+    var rebuildInputsFromLists = function() {
+      if (mlhjq("#image-gallery-wrapper #sortable li").length > 0) {
+        //clear out current list and reset sorted filenames
+        mlhjq('#galleryImageFilenames').val('');
+        mlhjq('#galleryImageIds').val('');
+        
+        //rebuild the hidden inputs and the viewable image filenames to match the current sort order
+        mlhjq.each(mlhjq("#image-gallery-wrapper #sortable li"), function(i, val){
+        
+          mlhjq(this).find("span.image-count").text((i+1));
+          mlhjq(this).find(".sort-value").val((i+1));
+          
+          if (i > 0) {
+            mlhjq('#galleryImageIds').val(mlhjq('#galleryImageIds').val() + ',' +  mlhjq(this).find('.image-id').val());
+            mlhjq('#galleryImageFilenames').val(mlhjq('#galleryImageFilenames').val() + ',' +  mlhjq(this).find('.image-filename').val());
+            
+          } else {
+            mlhjq('#galleryImageIds').val(mlhjq(this).find('.image-id').val());
+            mlhjq('#galleryImageFilenames').val(mlhjq(this).find('.image-filename').val());
+          }
+          
+        });
+      }
+    }; // END of rebuildInputsFromLists()
+ 
+    var resetSortable = function(destroyFirst) {
+      
+      rebuildInputsFromLists();
+      
+      //ONLY run sortable if there are existing list items to make sortable
+      if (mlhjq("#image-gallery-wrapper #sortable li").length > 0) {
+        if (destroyFirst) {
+          mlhjq("#image-gallery-wrapper #sortable").sortable("destroy");
+        }
+      
+        mlhjq("#image-gallery-wrapper #sortable").sortable({
+          deactivate: function(event, ui){
+            rebuildInputsFromLists();
+          }
+        });
+  /*
+  mlhjq("#image-gallery-wrapper #sortable").sortable({
+          deactivate: function(event, ui){
+            rebuildInputsFromLists();
+          },
+          placeholder: "ui-state-highlight"
+        });
+  */
+        mlhjq("#image-gallery-wrapper #sortable").disableSelection();
+        
+      }
+      
+    }; //END of resetSortable()
+    
+    
+    //initialize the sortable image gallery
+    resetSortable(false);
+    
+    mlhjq("a.selectableFile").live("click", function() {
+      
+      var params = getUrlVars(mlhjq(this).find("img").attr("src"));      
+      
+      mlhjq("#image-id-to-add-to-gallery").val(params["id"]);
+      mlhjq("#image-filename-to-add-to-gallery").val(mlhjq.trim(mlhjq(this).text()));
+      
+    });
+    
+    var imageStyle = "margin-left: 50px; margin-top: 5px; margin-right: 20px;";
+    mlhjq("#add-image-to-gallery").click(function(e) {
+      e.preventDefault();
+      if (mlhjq("#image-id-to-add-to-gallery").val() != "") {
+        //alert(' add clicked')
+        var newSize = mlhjq('#image-gallery-wrapper ul#sortable li').length + 1;
+        
+        var listItem = '<li class="ui-state-default"><span class="image-count">' + newSize + '</span>';
+        listItem += '<input class="sort-value" type="hidden" value="' + newSize + '"/>';
+        listItem += '<input class="image-id" type="hidden" value="' +  mlhjq("#image-id-to-add-to-gallery").val() + '" />';
+        listItem += '<input class="image-filename" type="hidden" value="' +  mlhjq("#image-filename-to-add-to-gallery").val() + '" />';
+        listItem += '<img style="' + imageStyle + '" src="/resize_image?maxh=100&maxw=300&id=' + mlhjq("#image-id-to-add-to-gallery").val() + '" alt="' + mlhjq("#image-filename-to-add-to-gallery").val() + '" title="' + mlhjq("#image-filename-to-add-to-gallery").val() + '"/>';
+        listItem += '<span class="sorted-filename">' + mlhjq("#image-filename-to-add-to-gallery").val()  + '</span><a href="#" class="remove-image-from-gallery">Remove</a>' + '</li>';
+        
+        //append new gallery image selection to the list
+        mlhjq('#image-gallery-wrapper ul#sortable').append(listItem);  
+        
+        //reset the hidden image-related values
+        mlhjq("#image-id-to-add-to-gallery").val("");
+        mlhjq("#image-filename-to-add-to-gallery").val("");
+        //alert(' about to call resetSortable')
+        //re-initialize sortability on the gallery list after the addition of the new image
+        resetSortable(true);
+        
+        //remove the image from the "Gallery Image Selector"
+        mlhjq('.fileSelectorControls:visible button span').each(function(){
+          if (mlhjq.trim(mlhjq(this).text()).toLowerCase() == 'remove') {
+            mlhjq(this).closest('button').click();
+            //alert('clicked has class = ' + mlhjq(this).closest('button').attr('class'));
+          }
+        });
+        
+      }
+      return false;
+    }); // END of "Add Selected Image" click action
+    
+     mlhjq("a.remove-image-from-gallery").live('click', function(e){
+      e.preventDefault();
+      mlhjq(this).closest('li').remove();
+      resetSortable(true);
+      return false;
+    }); // END of "Remove" image click action
+    
+
+    
+  //};
+
+    }); // END of loadImageGallery() doc ready
+  
+ </script>
+ 
+ 
+<div id="image-gallery-wrapper">
+  <input type="hidden" id="image-id-to-add-to-gallery" value=""/>
+  <input type="hidden" id="image-filename-to-add-to-gallery" value=""/>
+  <a href="#" id="add-image-to-gallery">Add Selected Image</a>
+  
+  <ul id="sortable">
+    
+    #if("$!{galleryImageIds}" != "")
+      
+      #set($prevSelectedImageIds = $galleryImageIds.split(","))
+      #set($prevSelectedFilenameIds = $galleryImageFilenames.split(","))
+      #set($imageCount = 0)
+      #foreach($imageId in $prevSelectedImageIds)
+        #set($imageFile = $filetool.getFile($imageId, true))
+  
+  #set($imageTitle = "$!{imageFile.title}")
+  #if("$!{imageTitle}" == "")
+    #set($imageTitle = $imageFile.fileName)
+  #end
+  
+        #set($imageCount = $imageCount + 1)
+        <li class="ui-state-default">
+    <div style="display: none;">$imageFile</div>
+          <span class="image-count">$!{imageCount}</span><input class="sort-value" type="hidden" value="1"/>
+          <input class="image-id" type="hidden" value="$!{imageId}"/>
+          <input class="image-filename" type="hidden" value=""/>
+          <img style="margin-left: 50px; margin-top: 5px;" alt="$!{imageTitle}" title="$!{imageTitle}" src="/resize_image?maxh=100&maxw=300&id=$!{imageId}"/>
+          <span class="sorted-filename">$!{imageTitle}</span>
+          <a href="#" class="remove-image-from-gallery">Remove</a>
+        </li>
+        
+      #end
+      
+    #end
+  </ul>
+
+</div><!-- End image-gallery-wrapper -->
+

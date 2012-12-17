@@ -1,0 +1,23 @@
+#if($EDIT_MODE)
+	<script type="text/javascript">
+		setTimeout(function(){
+			try {
+				var mlhCurrentUrl = "";
+				var startIndex = window.location.href.indexOf("/", (window.location.href.indexOf("//") + 2));
+				//then ends with page
+				var stopIndex = window.location.href.indexOf(".dot");
+				if (stopIndex > -1) {
+					stopIndex += 4;
+					mlhCurrentUrl = window.location.href.substring(startIndex, stopIndex);
+				} else {
+					stopIndex = window.location.href.lastIndexOf("/") + 1;
+					mlhCurrentUrl = window.location.href.substring(startIndex, stopIndex) + "index.dot";
+				}
+				var refererInput = parent.document.getElementById('referer');
+				refererInput.value = refererInput.value + "&mlhRefererOverride=" + mlhCurrentUrl;      
+			} catch(err) {
+        
+			}
+		}, 500);
+	</script>
+#end

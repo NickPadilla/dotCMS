@@ -1,0 +1,52 @@
+##dotParse('//$!{SUBDOMAIN_PREFIX}.resources.org/application/utils/mlh_macro_util.vtl')
+#parse('/mlh/global/utils/mlh_macro_util.vtl')
+
+
+#set ($urlPathAndPage = "${UtilMethods.decodeURL($VTLSERVLET_URI)}")
+
+
+###########################################################
+## Get the folder path without the page name
+###########################################################
+#set($folderPath = $urlPathAndPage.substring(0, $urlPathAndPage.lastIndexOf('/')))
+
+#set($currentFolder = $folderAPI.findCurrentFolder($folderPath , $host))
+
+#set($sortBy = "SystemPolicy.policyName")
+ 
+#returnAccordianJavaScriptAndFilterFormSetup("div#sysPolListing table tr")
+ 
+#set($subFolders = $folderAPI.findMenuItems($website.getFolder($folderAPI.findURLPath($rootFolderOfSystemPolicies),$host.identifier)))
+    
+    <div id="subFolderListing" class="ui-corner-all ui-helper-clearfix">
+
+    #foreach($subFolder in $subFolders)
+      #if($subFolder.isShowOnMenu())
+        <h4><a href="$!{subFolder.path}"><span class="headline">$subFolder.title</span></a></h4>
+        ## set the subFolder.inode to a string since it's used often throughout this script
+        #set($subFolderInode = $subFolder.inode)
+        
+
+        ##Pull all items - in this case Articles - from Sub Folder
+        #set($itemListQuery = "+(structureName:SystemPolicy)  +(conFolder:$!{subFolderInode} conhost:$!{subFolderInode})")
+
+        
+        #set($itemList = $dotcontent.pull("$!{itemListQuery}", 500, "$sortBy"))
+        
+        <div id="sysPolListing" class="clearfix accordianActivate">
+           <table>
+          #if("$!{itemList}" != "" && $itemList.size() > 0)
+                          #foreach($listItem in $itemList)
+                            <tr><td class="formPolicyNumber">$listItem.policyNumber </td><td class="headline">#editContentlet($listItem.inode)<a href="$listItem.printVersion.uri">$listItem.policyName</a></td> <td class="formPolicyDate"> $date.format('M-d-yyyy', $listItem.revisedDate)</td></tr>  
+                          #end        
+          #elseif($EDIT_MODE && $itemList.size()==0)
+                          
+               <tr><td class="headline"  colspan="2">No items in this folder.</td></tr>  
+          #end
+          </table>
+        </div>
+        
+      #end
+      
+    #end
+</div>

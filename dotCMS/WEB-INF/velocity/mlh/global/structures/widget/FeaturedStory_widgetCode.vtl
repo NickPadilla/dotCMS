@@ -1,0 +1,28 @@
+######### Variables ###################
+##
+## $hideTitle - yes/no option to hide title
+## $boxStyle - select options for different classes
+## $content - WYSIWYG
+##
+###################################
+
+
+
+<div class="widget $!{style} featuredStory">
+      #if("$!{hideTitle}" != "true")
+    <a href="$!{featuredImageLink}"><span class="featuredTitle">$!{displayTitle}</span></a>
+  #end
+   
+    <span class="featuredStoryImg">
+         <a href="$!{featuredImageLink}">
+    <img src="/resize_image?path=/dotAsset/$!{featuredImage}&w=200">
+        </a>
+     </span>
+   
+
+
+  <span class="featuredStoryCopy">
+    <p>$!{bodyText}</p>
+  </span>
+
+</div>

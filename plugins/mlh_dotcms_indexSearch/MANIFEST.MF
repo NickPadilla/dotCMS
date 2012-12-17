@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Deploy-Class: com.dotmarketing.plugins.mlh.deployment.ESIndexPluginDeployer
+Plugin-Name: mlh ES Index Search
+Plugin-Version: 1.1
+Author: Nicholas Padilla

@@ -1,0 +1,174 @@
+#############################################################################
+## Description: build/display a [Web Page Content + Sub Folder List]
+##
+## Preconditions: Expect ONLY 1 WebPageContent to be pulled from the folder specified.
+##      Expect at least 1 sub folder to be pulled from the folder specified.
+##
+##
+## ############ Variables ########################################################
+##
+## $displaySectionImage - true/false
+## $displayShortDescription - true/false
+## $parentFolderOfFolders - host (OR) folder where WebPageContent and Sub Folder listing will be pulled.
+## $maxShortDescriptionLength - the maximum length a short description display for each folder link listing can be
+## $usePagesCurrentFolder -
+##    false: then use $parentFolderOfFolders to pull the article list
+##    true or empty: then use the widget's page's folder (currentFolder) to pull the article list
+## $special - used to indictate something special about a folder (think Centers of Excellence
+##
+#############################################################################
+
+#####################################################################
+## $urlPathAndPage (ex: '/home/examples/articles/index.dot')
+## Note: will always contain the page name in the path
+#####################################################################
+#set ($urlPathAndPage = "${UtilMethods.decodeURL($VTLSERVLET_URI)}")
+
+###########################################################
+## Get the folder path without the page name
+###########################################################
+#set($folderPath = $urlPathAndPage.substring(0, $urlPathAndPage.lastIndexOf('/')))
+
+#set($currentFolder = $folderAPI.findCurrentFolder($folderPath , $host))
+
+#set($wpc_subFolders_Errors = "")
+#if("$!{usePagesCurrentFolder}" != "false")
+  ## then use the widget's page's folder to pull the article listing
+  #if("$!{currentFolder}" != "")
+    #set($parentFolderOfFolders  = $currentFolder.inode)
+  #else
+    #set($wpc_subFolders_Errors = "Error: currentFolder variable is empy or NULL<br/><br/>urlPathAndPage = $urlPathAndPage<br/>folderPath = $folderPath")
+  #end
+#end
+
+#if("$!{wpc_subFolders_Errors}" == "")
+  
+  #########################################################
+  ## Pull all Sub Folders on folder specified in $parentFolderOfFolders
+  #########################################################
+  
+  #set($menuItemList = $folderAPI.findMenuItems($parentFolderOfFolders))
+  #if("$!{menuItemList}" != "" && $menuItemList.size() > 0)
+    
+    ###################################
+    ## setup the column class name
+    ###################################
+    #if($howManyColumns == 1)
+      #set($colGridClassName = "")
+    #elseif($howManyColumns == 2)
+      #set($colGridClassName = "grid_5")
+    #elseif($howManyColumns == 3)
+      #set($colGridClassName = "grid_5")
+      ## for lebonheur services listing
+    #elseif($howManyColumns == 4)
+      #set($colGridClassName = "grid_2")
+    #elseif($howManyColumns == 5)
+      #set($colGridClassName = "grid_4")
+    #else
+      #set($howManyColumns = 2)
+      #set($colGridClassName = "grid_5")
+    #end
+
+    #set($firstColClassName = "alpha")
+    #set($lastColClassName = "omega")
+    
+    #########################################################
+    ## Display Sub Folders listing
+    #########################################################
+    <div id="sectionListingTop" class="ui-corner-top ui-helper-clearfix"></div>
+    <div id="sectionListing" class="ui-helper-clearfix">
+    
+      ##each item in this list contains a list, that list will populate each column
+      #set($columnLists = [])
+    
+      ## populate columnlists with empty lists that matches then number of $howManyColumns
+      #foreach($colCount in [1..$math.toInteger($howManyColumns)])
+        #set($added = $columnLists.add([]))
+      #end
+      
+      #set($menuItemCount = 0)
+      #foreach($menuItem in $menuItemList)          
+        ## ONLY show menuItems that are of type FOLDER
+        #set($menuItemType = "$!{menuItem.type}")
+        #set($menuItemType = $menuItemType.toUpperCase())
+        #if("$!{menuItemType}" == "FOLDER")
+          #set($colIndex = $math.mod($menuItemCount, $howManyColumns))
+          #set($added = $columnLists.get($colIndex).add($menuItem))
+          #set($menuItemCount = $menuItemCount + 1)
+        #end
+      #end
+      
+      #set($columnCount = 0)
+      #set($columnSize = $columnLists.size())
+      #foreach($colList in $columnLists)
+      
+        #set($columnCount = $columnCount + 1)
+        
+        #if($columnCount == 1)
+          #set($className = "$!{colGridClassName} alpha")
+        #elseif($columnCount == $columnSize)
+          #set($className = "$!{colGridClassName} omega")
+        #else
+          #set($className = "$!{colGridClassName}")
+        #end
+        
+        <div class="${className}" style="float: left;">
+          <ul>
+            #foreach($menuItem in $colList)
+	  		  #set($menuItemIdentifier = $webapi.getIdentifierByInode("$menuItem.inode"))
+              #set($menuItemFolder = $folderAPI.findCurrentFolder($menuItemIdentifier.path, $host))
+             
+              ###################################################################
+              ## Pull the short description for the folder from the FolderShortDescription in the folder specified
+              ###################################################################
+              
+              #set($shortDescription_query = "+structureName:FolderShortDescription +(conFolder:$!{menuItemFolder.inode} conhost:$!{menuItemFolder.inode})")
+              #set($shortDescriptionList = $dotcontent.pull($shortDescription_query, 1, "modDate desc"))
+              #if("$!{shortDescriptionList}" != "" && $shortDescriptionList.size() > 0)
+                #set($short = $shortDescriptionList.get(0))
+              #else
+                #if($EDIT_MODE)
+                  <span style="font-size: 11px; color: #888888">No content returned for <b>$!{shortDescription_query}</b></span>
+                #end
+              #end
+              
+             #if("$!{short.special.selectValue}" == 1)
+              <li class="folderSpecial">#editContentlet($short.inode)
+             #else
+              <li class="folderService">#editContentlet($short.inode)
+             #end
+             
+                <a href="$!{menuItem.path}">
+                  <h4><span class="headline">$menuItem.title</span></h4>
+                  #if("$!{displayShortDescription}" != "false" && "$!{short}" != "" && "$!{short.shortDescription}" != "")
+                    #if("$!{maxShortDescriptionLength}" == "")
+                      #set($maxShortDescriptionLength = "200")
+                    #end
+                    <span class="teaser"><p>$UtilMethods.prettyShortenString($short.shortDescription, $math.toInteger($maxShortDescriptionLength))</p></span>
+                  #end
+                </a>
+              </li>
+            #end
+          </ul>
+        </div>
+      #end
+    </div>
+    <div id="sectionListingBottom" class="ui-corner-bottom ui-helper-clearfix"></div>
+  #else
+    #if($EDIT_MODE)
+      No MenuItems returned from parentFolderOfFolders = $parentFolderOfFolders
+    #end
+  #end
+#end  
+  
+####################################
+## Display any errors
+####################################
+#if("$!{wpc_subFolders_Errors}" != "")
+  ## show visible error if in edit mode
+  #if($EDIT_MODE)
+    $wpc_subFolders_Errors
+  #else
+    <div style="display: none;" class="wpc-subFolders-errors">$wpc_subFolders_Errors</div>
+  #end
+#end

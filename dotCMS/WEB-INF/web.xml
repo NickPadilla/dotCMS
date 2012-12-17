@@ -26,7 +26,8 @@
 		<filter-name>FixCmisFilter</filter-name>
 		<filter-class>com.dotmarketing.filters.FixCmis.FixCmisFilter</filter-class>
 	</filter>
-	<filter>
+	
+<filter>
 		<filter-name>URLMapFilter</filter-name>
 		<filter-class>com.dotmarketing.cms.urlmap.filters.URLMapFilter</filter-class>
 	</filter>

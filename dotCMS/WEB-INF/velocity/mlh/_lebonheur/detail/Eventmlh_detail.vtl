@@ -1,0 +1,108 @@
+########### Variables of Eventmlh structure #############
+##
+## host1
+## category - Event Type
+## title
+## startDate
+## endDate
+## recurrance - true/false## description
+## location
+## image
+## file
+## tags
+## teaser - short version of description
+## cost
+## contact1 - relationship to "Contact" structure
+##
+##############################################
+
+
+## resize_image parameters
+#set($imageWidth = 700)
+
+<div>
+
+  ## if no existing URLMapContent/contentlet, then query/pull the first Eventmlh
+  #if(!$UtilMethods.isSet($request.getAttribute("com.dotmarketing.wiki.contentlet")))
+    #set($query = "+structureName:Eventmlh +(conhost:$host.identifier) +live:true")
+
+    #foreach($content in $dotcontent.pull($query, 1, "Eventmlh.startDate"))
+      #set($URLMapContent = $content)
+    #end
+  #end
+
+  #if("$!URLMapContent.inode}" != "")
+    
+    <div id="event_intro">
+      <h1>$!{URLMapContent.title}</h1>
+    </div>
+    
+    <div id="event_info">
+      #editContentlet($URLMapContent.inode)
+      <div id="event_glance" class="grid_4 widget alpha">
+      #if($URLMapContent.imageImageURI != "")
+      <div id="eventImg">
+        <img src="/resize_image?path=$!{URLMapContent.imageImageURI}&w=220"/>
+      </div>
+      #end
+        
+        <h2>At A Glance</h2>
+        <table class="info_table">
+          <tr>
+            <th class="label">Time</th>
+            <td class="data">
+              <div class="time_date">$date.format('EEE, MMM dd', $!URLMapContent.startDate)</div>
+              <div class="time_date">$date.format('hh:mm', $!URLMapContent.startDate)</div>
+            </td>
+          </tr>
+          <tr class="spacer">
+            <td colspan="2"><hr /></td>
+          </tr>
+          <tr>
+            <th class="label">Cost</th>
+            <td class="data">
+              <div class="cost_cost">$!{URLMapContent.cost}</div>
+            </td>
+          </tr>
+          <tr class="spacer">
+            <td colspan="2"><hr /></td>
+          </tr>
+          <tr>
+            <th class="label">Contact</th>
+            <td class="data">
+              #set($contacts = $dotcontent.pullRelated("Eventmlh-Contact", "$!{URLMapContent.identifier}", null, false, 0, null))
+              ##set($contacts = $dotcontent.pullRelated("Eventmlh-Contact", "$!{URLMapContent.identifier}", false, 0))
+
+              <ul>
+                #foreach($contact in $contacts)
+                  <li>
+                    $!{contact.firstName}&nbsp;$!{contact.lastName}
+                    #if("$!{contact.email}" != "")
+                      <br/>$!{contact.email}
+                    #end
+                    #if("$!{contact.phone}" != "")
+                      <br/>$!{contact.phone}
+                    #end
+                  </li>
+                #end
+              </ul>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div id="event_desc" class="grid_8 omega">
+        $!{URLMapContent.description}
+        <br><br>
+        $!{URLMapContent.bodyText}
+      </div>
+
+    </div>
+    ## End Event Info  
+  #else
+    <blockquote>
+      <h3>We are sorry, we could not find the event for which you are looking</h3>
+    </blockquote>
+  #end
+
+</div>

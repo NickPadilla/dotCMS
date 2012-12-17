@@ -1,0 +1,43 @@
+##Set the photoCarousel plugin source code
+#if(!($UtilMethods.isSet($photoCarouselPlugin)))
+  #set($photoCarouselPlugin = '/js/jquery-plugins/jquery.slider/jquery.slider.min.js')
+#end
+<script type="text/javascript" src="$!{photoCarouselPlugin}"></script>
+
+##Set the photoCarousel Style
+<link rel="stylesheet" type="text/css" href="/js/jquery-plugins/jquery.slider/themes/default/jquery.slider.css" />
+<!--[if IE 6]>
+  <link rel="stylesheet" type="text/css" href="/js/jquery-plugins/jquery.slider/themes/default/jquery.slider.ie6.css" />
+<![endif]-->
+
+##Set the Carousel ID
+#if(!($UtilMethods.isSet($photoCarouselID)))
+   #set($photoCarouselID = 'carousel')
+#end
+ 
+<div class="$!{photoCarouselID}">
+  #set($imgIdCount = 0)
+  #foreach($imgId in $imageIds)
+    #set($imgFilename = $imageFilenames.get($imgIdCount))
+  
+    <div>
+      <img src="/resize_image?id=$!{imgId}&w=700" alt="$!{imgFilename}" title="$!{imgFilename}" />
+    </div> 
+    
+    #set($imgIdCount = $imgIdCount + 1)
+  #end
+</div>
+
+
+<script type="text/javascript"> 
+ 
+  jQuery(document).ready(function() {
+    jQuery('.$!{photoCarouselID}').slideshow({
+      width      : 680,
+      height     : 420,
+      duration   : 800,
+      speed      : 400,
+      transition : 'fade'
+    });
+  }); 
+</script>?

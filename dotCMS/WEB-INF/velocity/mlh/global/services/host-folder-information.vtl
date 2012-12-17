@@ -1,0 +1,35 @@
+#set($mainMap = $contents.getEmptyMap())
+
+#set($folderInode = $request.getParameter("folderInode"))
+
+#if("$!{folderInode}" != "")
+	
+	##cache the folder path for 6hrs 
+	#dotcache("mlh-mods-folder-path-for-${folderInode}", 21600)
+	  	
+		#set($folderPath = $folderAPI.findURLPath($folderInode))
+		#set($getHostInodeSql = "SELECT identifier.host_inode FROM folder inner join identifier on folder.identifier = identifier.id WHERE inode='${folderInode}'")	
+		
+		#set($sqlToRun = "SELECT inode.inode, contentlet.identifier, contentlet.title, contentlet_version.live_inode, contentlet_version.working_inode FROM inode ")
+		#set($sqlToRun = "$sqlToRun INNER JOIN contentlet ON inode.inode=contentlet.inode ")
+		#set($sqlToRun = "$sqlToRun INNER JOIN contentlet_version_info as contentlet_version on contentlet.identifier = contentlet_version.identifier ")
+		#set($sqlToRun = "$sqlToRun WHERE contentlet.identifier=(${getHostInodeSql}) AND contentlet_version.live_inode is not null")
+	  	
+		#getSQLResults($sqlToRun)
+		
+		#if($UtilMethods.isSet($SQLError))
+			#set($res = $mainMap.put("error", "${SQLError}"))
+		#else
+			#set($res = $mainMap.put("host", $results.get(0).title))
+			#set($res = $mainMap.put("folderPath", $folderPath))
+			
+		#end
+		
+		$json.generate($mainMap)
+		
+	#end
+#else
+	#set($res = $mainMap.put("error", "no folderInode parameter specified"))
+	$json.generate($mainMap)
+#end
+

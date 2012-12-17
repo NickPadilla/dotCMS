@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Plugin-Name: MLH TinyMCE Config
+Plugin-Version: 1.0
+Author: Nicholas Padilla

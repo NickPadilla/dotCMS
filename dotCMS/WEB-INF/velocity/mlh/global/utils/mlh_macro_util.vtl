@@ -1,0 +1,136 @@
+#*
+Arguments - $linkStructureToMap (a Link structure object) 
+returns a linkStructureMap, the type (content, file, folder, external), the link, and it's href text
+
+to call it:  #returnlinkStructureMap($yourLinkObject)
+
+
+Returns:
+
+$linkStructureAsMap.link
+$linkStructureAsMap.linkText
+$linkStructureAsMap.linkType
+
+*#
+#macro( returnlinkStructureMap  $linkStructureToMap)
+
+  #set($linkStructureAsMap = $contents.getEmptyMap())
+  
+  #set($res = $!linkStructureAsMap.put("linkText", $linkStructureToMap.linkText))
+  #set($res = $!linkStructureAsMap.put("linkType", $linkStructureToMap.linkType.selectValue))
+  
+  #if($linkStructureToMap.linkType.selectValue=="external")
+    #set($res = $!linkStructureAsMap.put("link", $linkStructureToMap.href))
+  #elseif($linkStructureToMap.linkType.selectValue=="content")
+    ## TODO: need Stephen to finish "Link" structure
+    #set($res = $!linkStructureAsMap.put("link", ""))
+  #elseif($linkStructureToMap.linkType.selectValue=="folder")
+    ## TODO: need Stephen to finish "Link" structure
+    #set($res = $!linkStructureAsMap.put("link", ""))
+  #elseif($linkStructureToMap.linkType.selectValue=="file")
+    #set($res = $!linkStructureAsMap.put("link", $linkStructureToMap.href))
+  #end
+
+#end
+
+#*
+Arguments - $commonElementsStructureToMap (any structure type that is in the root conditional tree, e.g. "Link" or "ExtendedFile") 
+
+to call it:  #returnHrefLinkAndLinkTextFromStrucuture($yourStructureObject)
+
+Returns (not all strucutures have these elements, but where the dont it's set to empty)
+
+$commonElementsStructureAsMap.link
+$commonElementsStructureAsMap.linkText
+$commonElementsStructureAsMap.linkType (used for the "Link" strucuture)
+$commonElementsStructureAsMap.idNumber (used for the "ExtendedFile" strucuture, if the array is not empty and has one value, the first category NAME is returned)
+*#
+#macro( returnCommonElementsStructureMap $commonElementsStructureToMap  )
+
+  #set($commonElementsStructureAsMap = $contents.getEmptyMap())
+
+  #if("$!{commonElementsStructureToMap.structure.velocityVarName}" == "Link")
+  
+    ## call to macro returnlinkStructureMap
+    #returnlinkStructureMap($commonElementsStructureToMap)
+    
+    #set($res = $!commonElementsStructureAsMap.put("link",  $linkStructureAsMap.link))
+    #set($res = $!commonElementsStructureAsMap.put("linkText",  $linkStructureAsMap.linkText))
+    #set($res = $!commonElementsStructureAsMap.put("linkType", $linkStructureAsMap.linkType))
+    
+    ## not used on Link
+
+    #set($res = $!commonElementsStructureAsMap.put("idNumber", ""))
+    
+  #elseif("$!{commonElementsStructureToMap.structure.velocityVarName}" == "ExtendedFile")
+  
+    #set($res = $!commonElementsStructureAsMap.put("link",  "$filetool.getURI($commonElementsStructureToMap.file)"))
+    #set($res = $!commonElementsStructureAsMap.put("linkText",  $commonElementsStructureToMap.title))
+    #set($res = $!commonElementsStructureAsMap.put("idNumber", $commonElementsStructureToMap.idNumber))
+    
+    ## not used on ExtendedFile
+    #set($res = $!commonElementsStructureAsMap.put("linkType", ""))
+
+  #end
+
+#end
+
+#*
+Arguments - none
+
+to call it:  #returnAccordianJavaScriptAndFilterFormSetup()
+
+Returns the quicksearch js script & the functions for quick search.
+
+*#
+#macro(returnAccordianJavaScriptAndFilterFormSetup $searchedElement)
+<script type="text/javascript" src="/global/js/jquery-plugins/jquery-quicksearch/jquery.quicksearch.js"></script>
+
+<script>
+  $(function() {
+
+    $('input#id_search').quicksearch('$searchedElement', {
+    'delay': 100,
+    'onBefore': function () {
+        openAccordian();
+    },
+    'onAfter': function () {
+      if( !$('input#id_search').val() ) {
+        closeAccordian();
+      }
+        
+    }
+    
+  });
+
+    $('#subFolderListing').accordion({
+        header: 'h4',
+        active: true,
+        alwaysOpen: true,
+        animated: false,
+        autoHeight: false
+    });
+
+  
+});
+    
+    // opens all categories 
+function openAccordian()
+{
+    $(".accordianActivate").show('slow');
+}   
+
+function closeAccordian()
+{
+    $(".accordianActivate").hide('slow');
+}   
+
+</script>
+
+<div id="subFolderFilter" class="clearfix">
+  <form class="filterForm" action="#">
+    <input class="filterField" type="text" name="search" value="" id="id_search" placeholder="Filter Contents" autofocus />
+    <input class="filterButton" type="submit" alt="Go" value="Go">
+  </form>
+</div>
+#end

@@ -1,0 +1,309 @@
+#############################################################################
+## Description: build/display a [Article + Sub Folder List]
+##
+## Preconditions: Expect ONLY 1 Article (NewsArticle) to be pulled from the folder specified.
+##      Expect at least 1 sub folder to be pulled from the folder specified.
+##
+##
+## ############ Variables ########################################################
+##
+## $displayArticleImage - true/false
+## $displayArticleTeaser - true/false
+## $displayShortDescription - true/false
+## $parentFolderOfFolders - host (OR) folder where Article and Sub Folder listing will be pulled.
+## $maxShortDescriptionLength - the maximum length a short description display for each folder link listing can be
+## $usePagesCurrentFolder - 
+##    false: then use $parentFolderOfFolders to pull the article list
+##    true or empty: then use the widget's page's folder (currentFolder) to pull the article list
+## 
+#############################################################################
+
+#####################################################################
+## $urlPathAndPage (ex: '/home/examples/articles/index.dot')
+## Note: will always contain the page name in the path
+#####################################################################
+#set ($urlPathAndPage = "${UtilMethods.decodeURL($VTLSERVLET_URI)}")
+
+###########################################################
+## Get the folder path without the page name
+###########################################################
+#set($folderPath = $urlPathAndPage.substring(0, $urlPathAndPage.lastIndexOf('/')))
+
+#set($currentFolder = $folderAPI.findCurrentFolder($folderPath , $host))
+
+#set($article_subFolders_Errors = "")
+#if("$!{usePagesCurrentFolder}" != "false")
+	## then use the widget's page's folder to pull the article listing
+	#if("$!{currentFolder}" != "")
+		#set($parentFolderOfFolders  = $currentFolder.inode)
+	#else
+		#set($article_subFolders_Errors = "Error: currentFolder variable is empty or NULL<br/><br/>urlPathAndPage = $urlPathAndPage<br/>folderPath = $folderPath")
+	#end
+#end
+
+#if("$!{article_subFolders_Errors}" == "")
+
+	#########################################################
+	## Pull WebPageContent on folder specified in $folderWhereArticlesAreStored
+	#########################################################
+
+	#set($article_query = "+structureName:NewsArticle")
+	#if($parentFolderOfFolders == "SYSTEM_HOST")
+		#set($article_query = "$article_query +conhost:SYSTEM_HOST*")
+	#elseif($parentFolderOfFolders != "")
+		#set($article_query = "$article_query +(conFolder:$!{parentFolderOfFolders} conhost:$!{parentFolderOfFolders})")
+	#end
+  
+	#set($articleList = $dotcontent.pull("$!{article_query}", 1, "NewsArticle.title desc"))
+	#if("$!{articleList}" != "" && $articleList.size() > 0)
+		#set($article = $articleList.get(0))
+    
+		#########################################################
+		## Display WebPageContent 
+		#########################################################
+		<div id="article_Content" class="span_12 clearfix">
+      
+			#editContentlet($article.inode)
+			<h1>$!{article.headline}</h1>
+			<div class="article_Info">Added $!{article.publishDateAndTime}</div>    
+      
+			#set($relatedLinks = $contents.getRelatedChildContent("NewsArticle-Link", "${article.inode}"))
+    
+    	#set($res = $dotlogger.error("**************** NewsArticle-Link.inode = ${article.inode}            relatedLinks = $relatedLinks"))
+  
+			#set($hasRelatedLinks = ("$!{relatedLinks}" != "" && $relatedLinks.size() > 0))
+			#set($hasArticleTeaser = ($UtilMethods.isSet($article.teaser) && "$!{displayArticleTeaser}" != "false"))
+  
+  
+			#############################################
+			## BEGIN div wrapper for article teaser and related links
+			#############################################
+			<!-- Article Plus SubFolders -->
+  
+			#if($hasArticleTeaser || $hasRelatedLinks)
+				<div class="article-aside grid_4 alpha push_8">
+			#end
+			#if ($hasArticleTeaser)
+				<div id="article_Teaser" class="teaser">
+					<h4>Article Teaser</h4>
+					$!{article.teaser}
+				</div>
+			#end
+      
+			#if($hasRelatedLinks)
+				<div class="menu menu_Related $!{article.relatedLinksClass}">
+					#if($!{article.relatedLinksDisplay} != "")
+						<h4>$!{article.relatedLinksDisplay} - Related Links</h4>
+						<span>
+					#else 
+						<h4>Related Links</h4>
+					#end
+					<ul>
+						#foreach($relatedLink in $relatedLinks)
+							<li>
+								##dotParse('//${SUBDOMAIN_PREFIX}.resources.org/application/content-display/fragments/relatedLink_display_fragment.vtl')
+								#parse('/mlh/global/content-display/fragments/NewsArticle_relatedLink_display.vtl')
+							</li>
+						#end
+					</ul>
+					#if($!{article.relatedLinksDisplay} != "")
+						</span>
+					#end
+				</div> ## end menu_Related
+			#end
+			#if($hasArticleTeaser || $hasRelatedLinks)
+			  </div>
+			#end
+			#############################################
+			## END div wrapper for article teaser and related links
+			#############################################
+  
+  
+			#if ($UtilMethods.isSet($article.bodyText))
+				#set($gridClass = "grid_12")
+				#if($hasArticleTeaser || $hasRelatedLinks)
+					#set($gridClass = "grid_8 omega pull_4")
+				#end
+  
+				<div id="article_Text" class="$gridClass">
+    
+					#if("$!{article.image.uri}" != "" || "$!{article.asideContent}" != "")
+						<div class="article_Aside">
+    
+							#if ("$!{article.image}" != "" && "$!{article.image.uri}" != "" && "$!{displayArticleImage}" != "false")
+								<div class="article_AsideImg">   
+									<img src="/resize_image?path=$!{article.image.uri}&w=250&h=200" alt="$!{$article.image.title}" title="$!{$article.image.title}">
+								</div>
+							#end
+    
+							#if("$!{article.asideContent}" != "")
+								<div class="article_AsideContent">   
+									$!{article.asideContent}
+								</div>
+							#end
+    
+						</div>
+					#end
+					## end article aside
+      
+					$!{article.bodyText}
+				</div>##end article_Text
+			#end
+  
+			## ONLY show image gallery if both the ids and filenames are set
+			#if ($UtilMethods.isSet($article.galleryImageIds) && $UtilMethods.isSet($article.galleryImageFilenames))
+  
+				######################################################
+				## Setup required varibles for photo carousel and photo gallery views
+				######################################################
+				#set($imageIds = $article.galleryImageIds.split(","))
+				#set($imageFilenames = $article.galleryImageFilenames.split(","))
+				#set($imgIdCount = 0)
+				## set the maxh and maxw values for the "resize_image" url
+				#set($maxHeight = 100)
+				#set($maxWidth = 300)
+  
+				#############################################################
+				## DISPLAYS an Image Gallery
+				#############################################################
+				#if("$!{article.photoView.selectValue}" == "gallery")
+					## TODO: Lou - modify the file below to display photos in a gallery
+					#dotParse('/application/articles/articleDetail_photoGallery.vtl')
+				#end
+    
+				#############################################################
+				## DISPLAYS an Image Carousel
+				#############################################################
+				#if("$!{article.photoView.selectValue}" == "carousel")
+					## TODO: Lou - modify the file below to display photos in a carousel
+					#dotParse('/application/articles/articleDetail_photoCarousel.vtl')
+				#end
+    
+			#end
+		</div> ##end article_Content
+	#else
+		#set($article_subFolders_Errors = "$article_subFolders_Errors<br/>No NewsArticle returned from query = $article_query")
+	#end  
+	#########################################################
+	## Pull all Sub Folders on folder specified in $parentFolderOfFolders
+	#########################################################
+  
+	#set($menuItemList = $folderAPI.findMenuItems($parentFolderOfFolders))
+	#if("$!{menuItemList}" != "" && $menuItemList.size() > 0)
+    
+        ###################################
+        ## setup the column class name
+        ###################################
+        #if($howManyColumns == 1)
+			#set($colGridClassName = "grid_12")
+        #elseif($howManyColumns == 2)
+			#set($colGridClassName = "grid_6")
+        #elseif($howManyColumns == 3)
+			#set($colGridClassName = "grid_4")
+        #elseif($howManyColumns == 4)
+			#set($colGridClassName = "grid_3")
+        #else
+			#set($howManyColumns = 2)
+			#set($colGridClassName = "grid_6")
+        #end
+
+        #set($firstColClassName = "alpha")
+        #set($lastColClassName = "omega")
+    
+        #########################################################
+        ## Display Sub Folders listing 
+        #########################################################
+    
+		<div id="sectionListing" class="ui-corner-all ui-helper-clearfix">
+    
+			##each item in this list contains a list, that list will populate each column
+			#set($columnLists = [])
+    
+			## populate columnlists with empty lists that matches then number of $howManyColumns
+			#foreach($colCount in [1..$math.toInteger($howManyColumns)])
+				#set($added = $columnLists.add([]))
+			#end
+      
+			#set($menuItemCount = 0)
+			#foreach($menuItem in $menuItemList)          
+				## ONLY show menuItems that are of type FOLDER
+				#set($menuItemType = "$!{menuItem.type}")
+				#set($menuItemType = $menuItemType.toUpperCase())
+				#if("$!{menuItemType}" == "FOLDER")
+                    #set($colIndex = $math.mod($menuItemCount, $howManyColumns))
+                    #set($added = $columnLists.get($colIndex).add($menuItem))
+                    #set($menuItemCount = $menuItemCount + 1)
+				#end
+			#end
+      
+			#set($columnCount = 0)
+			#set($columnSize = $columnLists.size())
+			#foreach($colList in $columnLists)
+      
+				#set($columnCount = $columnCount + 1)
+        
+				#if($columnCount == 1)
+					#set($className = "$!{colGridClassName} alpha")
+				#elseif($columnCount == $columnSize)
+					#set($className = "$!{colGridClassName} omega")
+				#else
+					#set($className = "$!{colGridClassName}")
+				#end
+        
+				<div class="${className}" style="float: left;">
+					<ul>
+						#foreach($menuItem in $colList)
+	  		 				#set($menuItemIdentifier = $webapi.getIdentifierByInode("$menuItem.inode"))
+							#set($menuItemFolder = $folderAPI.findCurrentFolder($menuItemIdentifier.path, $host))
+             
+                            ###################################################################
+                            ## Pull the short description for the folder from the FolderShortDescription in the folder specified
+                            ###################################################################
+              
+							#set($shortDescription_query = "+structureName:FolderShortDescription +(conFolder:$!{menuItemFolder.inode} conhost:$!{menuItemFolder.inode})")
+							#set($shortDescriptionList = $dotcontent.pull($shortDescription_query, 1, "modDate desc"))
+							#if("$!{shortDescriptionList}" != "" && $shortDescriptionList.size() > 0)
+								#set($short = $shortDescriptionList.get(0))
+							#else
+								#if($EDIT_MODE)
+									No content returned for <b>$!{shortDescription_query}</b>
+								#end
+							#end
+               
+							<li>
+								<a href="$!{menuItem.path}">
+									<h4><span class="headline">$menuItem.title</span></h4>
+									#if("$!{displayShortDescription}" != "false" && "$!{short}" != "" && "$!{short.shortDescription}" != "")
+										#if("$!{maxShortDescriptionLength}" == "")
+											#set($maxShortDescriptionLength = "200")
+										#end
+										<span class="teaser"><p>$UtilMethods.prettyShortenString($short.shortDescription, $math.toInteger($maxShortDescriptionLength))</p></span>
+									#end
+								</a>
+							</li>
+						#end
+					</ul>
+				</div>
+			#end
+		</div>
+		## END sectionListing
+	#else
+		#if($EDIT_MODE)
+			No MenuItems returned from parentFolderOfFolders = $parentFolderOfFolders
+		#end
+	#end
+  
+#end
+## end if("$!{article_subFolders_Errors}" == "")
+  
+####################################
+## Display any errors
+####################################
+#if("$!{article_subFolders_Errors}" != "")
+	## show visible error if in edit mode
+	#if($EDIT_MODE)
+		$article_subFolders_Errors
+	#else
+		<div style="display: none;" class="article-subFolders-errors">$article_subFolders_Errors</div>
+	#end
+#end

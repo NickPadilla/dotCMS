@@ -1,0 +1,36 @@
+<div id="socialMedia" class="widget $!class">
+	<h2>$!displayTitle</h2>
+	<ul>
+		#if("$!{facebookLink}" != "")
+			<li>
+				<a href="$!{facebookLink}">
+					<img class="social-media-image" src="/resize_image?path=/dotAsset/$!{facebookIcon}&w=20"/><span class="social-media-title">Facebook</span>
+				</a>
+			</li>
+		#end
+       
+		#if("$!{twitterLink}" != "")
+			<li>
+				<a href="$!{twitterLink}">
+					<img class="social-media-image" src="/resize_image?path=/dotAsset/$!{twitterIcon}&w=20"/><span class="social-media-title">Twitter</span>
+				</a>
+			</li>
+        #end
+        
+        #if("$!{youtubeLink}" != "")
+			<li>
+				<a href="$!{youtubeLink}">
+					<img class="social-media-image" src="/resize_image?path=/dotAsset/$!{youtubeIcon}&w=20"/><span class="social-media-title">Youtube</span>
+				</a>
+			</li>
+		#end
+         
+		#if("$!{socialLink}" != "")
+			<li>
+				<a href="$!{socialLink}">
+					<img class="social-media-image" src="/resize_image?path=/dotAsset/$!{socialIcon}&w=20"/><span class="social-media-title">$!socialName</span>
+				</a>
+			</li>
+		#end
+	</ul>
+</div>

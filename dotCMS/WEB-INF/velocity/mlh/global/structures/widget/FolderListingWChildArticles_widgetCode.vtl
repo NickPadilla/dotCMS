@@ -1,0 +1,99 @@
+
+##dotParse('//$!{SUBDOMAIN_PREFIX}.resources.org/application/utils/mlh_macro_util.vtl')
+#parse('/mlh/global/utils/mlh_macro_util.vtl')
+#returnAccordianJavaScriptAndFilterFormSetup("div#articleListing ul li")
+
+#set($subFolders = $website.getSubFolders($website.getFolder($folderAPI.findURLPath($parentFolderOfFolders),$host.identifier)))
+<div id="subFolderListing" class="ui-corner-all ui-helper-clearfix">
+
+#foreach($subFolder in $subFolders)
+  #if($subFolder.isShowOnMenu())
+    
+    <h4><a href="$!{subFolder.path}"><span class="headline">$subFolder.title</span></a></h4>
+    
+    ## set the subFolder.inode to a string since it's used often throughout this script
+    #set($subFolderInode = $subFolder.inode)
+    
+    #*
+    Pull the short description for the folder from the FolderShortDescription in the folder specified
+    ONLY if it needs it
+    *#
+    #if("$!{displayShortDescription}" != "false")      
+      ## query for short description
+      #set($shortDescriptionList = $dotcontent.pull( "+structureName:FolderShortDescription +(conFolder:$!{subFolderInode} conhost:$!{subFolderInode})", 1, "modDate desc"))  
+      
+      ## check list size
+      #if("$!{shortDescriptionList}" != "" && $shortDescriptionList.size() > 0)
+        #set($short = $shortDescriptionList.get(0))
+        
+        #if("$!{maxShortDescriptionLength}" == "")
+          #set($maxShortDescriptionLength = "200")
+        #end
+        
+        <span class="teaser"><p>$UtilMethods.prettyShortenString($short.shortDescription, $math.toInteger($maxShortDescriptionLength))</p></span>
+        
+      ## list is empty
+      #else        
+        #if($EDIT_MODE)
+          No content returned for <b>$!{shortDescription_query}</b>
+        #end
+      ## end list size check
+      #end
+    ## end display short descr check
+    #end
+
+    ##Pull all items - in this case Articles - from Sub Folder
+    #set($itemListQuery = "+structureName:NewsArticle +(conFolder:$!{subFolderInode} conhost:$!{subFolderInode})")
+    
+    ## does it usePublishDateRange
+    #if("$!{usePublishDateRange}" == "true")
+      ## then make sure they're not empty
+      #if("$!{beginPublishDateRange}" != "" && "$!{endPublishDateRange}" != "" )
+        #set($beginDateStr = $date.format("MM/dd/yyyy HH:mm:ss", $beginPublishDateRange))
+        #set($endDateStr = $date.format("MM/dd/yyyy HH:mm:ss", $endPublishDateRange))
+        #set($itemListQuery = "$itemListQuery +NewsArticle.publishDateAndTime:[$beginDateStr TO $endDateStr]")
+      #end
+    #end
+
+    #if("$!{maxArticlesToPull}" == "")
+      #set($maxArticlesToPull = "100")
+    #end
+
+    #set($sortQuery = "NewsArticle.publishDateAndTime desc")
+
+    #if("$!{sortArticleListBy}" != "")
+      #set($sortQuery = "NewsArticle.${sortArticleListBy}")
+      #if("$!{sortDirection}" != "" && "$!{sortDirection}" == "desc")
+        #set($sortQuery = "NewsArticle.${sortArticleListBy} desc")
+      #end
+    #end
+    
+    
+    #set($itemList = $dotcontent.pull("$!{itemListQuery}", $math.toInteger($maxArticlesToPull), "$sortQuery"))
+    
+    #if("$!{itemList}" != "" && $itemList.size() > 0)
+      <div id="articleListing" class="clearfix accordianActivate">
+         <ul>
+        #foreach($item in $itemList)
+          <a href="/$!{item.urlMapRoot.selectValue}/$!{item.urlTitle}"><li>#editContentlet($item.inode)<span class="headline">$item.headline</span>
+          #if("$!{displayTeaser}" != "false")
+            #if("$!{maxTeaserLength}" == "")
+              #set($maxTeaserLength = "200")
+            #end
+            <span class="teaser"><p>$UtilMethods.prettyShortenString($!item.teaser, $math.toInteger($maxTeaserLength))</p></span>
+          #end
+          
+          #if("$!{displayThumbnail}" == "true")
+            <span class="thumbnail"><img src="/thumbnail?inode=$!{item.inode}"></span>
+          #end
+        </li></a>
+        #end
+        </ul>
+      </div>
+    #end
+    
+    
+  #end
+  
+#end
+</div>

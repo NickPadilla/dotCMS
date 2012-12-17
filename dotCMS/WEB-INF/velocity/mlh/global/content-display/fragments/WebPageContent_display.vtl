@@ -1,0 +1,50 @@
+#################################################################
+## 
+## Required: $wpc - a WebPageContent item
+##      $displaySectionImage - boolean set from a widget
+## 
+#################################################################
+<div id="article_Content" class="clearfix">
+  #########################################################
+  ## Display WebPageContent 
+  #########################################################
+  #editContentlet($wpc.inode)
+  #if("$!{wpc.title}" != "")
+    <h2>$wpc.title</h2>
+  #end
+  
+    #set($relatedLinks = $contents.getRelatedChildContent("webPageContent-Link", "${wpc.inode}"))
+  
+  #if("$!{wpc.description}" != "")
+    <div class="article_Info">$wpc.description</div>
+  #end
+  
+  #if($relatedLinks && $relatedLinks.size() > 0)
+    <div id="article_Text" class="grid_8 alpha">
+  #else
+    <div id="article_Text">
+  #end
+      #if("$!{wpc.sectionImage}" != "" && "$!{displaySectionImage}" == "true")
+    <div class="article_AsideImg">
+      <img src="/resize_image?path=$!{wpc.sectionImage.uri}&maxw=200&maxh=200" alt="$!{wpc.sectionImage.title}" title="$!{wpc.sectionImage.title}"/>
+    </div>
+  #end
+    #if("$!{wpc.body}" != "")
+      $!{wpc.body}
+    #end
+  </div>
+
+  #if($relatedLinks && $relatedLinks.size() > 0)
+    <div class="menu menu_Related grid_4 omega">
+      <h4>Related Links</h4>
+      <ul>
+        #foreach($relatedLink in $relatedLinks)
+          <li>
+           #parse('/mlh/global/content-display/fragments/NewsArticle_relatedLink_display.vtl')##<div style="display: none;">#fileSizeFormatter($relatedLink.pageOrFile) $fileSizeOutput <br/>inode = $relatedLink.inode <br/>identifier = $relatedLink.identifier</div>
+          </li>
+        #end
+      </ul>
+    </div>
+  #end
+  
+</div>

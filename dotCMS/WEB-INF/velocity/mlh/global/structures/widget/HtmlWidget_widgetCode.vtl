@@ -1,0 +1,21 @@
+######### Variables ###################
+##
+## $hideTitle - yes/no option to hide title
+## $boxStyle - select options for different classes
+## $content - WYSIWYG
+##
+###################################
+
+
+
+<div class="widget $!{boxStyle} $!{class}">
+
+  #if("$!{hideTitle}" != "true")
+    <h2 class=$!{boxStyle}">$!{titleDisplayed}</h2>
+  #end
+
+  <span class="$!{boxStyle}">
+    $!{content}
+  </span>
+
+</div>

@@ -1,0 +1,114 @@
+#################################
+## $imageIds - list of image ids
+## $imageFilenames - list of image filenames
+#################################
+
+#if($imageIds.size() > 0)
+
+  #if(!$photoWidth)
+    #set ($photoWidth = "600")
+  #end
+
+  #if(!$photoHeight)
+    #set ($photoHeight = "450")
+  #end
+
+  #if(!$thumbnailWidth)
+    #set ($thumbnailWidth = "120")
+  #end
+
+  #if(!$thumbnailHeight)
+    #set ($thumbnailHeight = "90")
+  #end
+
+  #if(!$UtilMethods.isSet($showSubgalleryTitle))
+    #set($showSubgalleryTitle = true)
+  #end
+
+  #if(!$UtilMethods.isSet($showPhotoTitle))
+    #set($showPhotoTitle = "true")
+  #end
+
+  #if(!$UtilMethods.isSet($imageLoading))
+    #set($imageLoading = '/js/jquery-plugins/lightbox/images/lightbox-ico-loading.gif')
+  #end
+
+  #if(!$UtilMethods.isSet($imageBtnClose))
+    #set($imageBtnClose = '/js/jquery-plugins/lightbox/images/lightbox-btn-close.gif ')
+  #end
+
+  #if(!$UtilMethods.isSet($imageBtnPrev))
+    #set($imageBtnPrev = '/js/jquery-plugins/fancybox/images/lightbox-btn-prev.gif')
+  #end
+
+  #if(!$UtilMethods.isSet($imageBtnNext))
+    #set($imageBtnNext = '/js/jquery-plugins/lightbox/images/lightbox-btn-next.gif')
+  #end
+
+  #if(!$UtilMethods.isSet($imageBlank))
+    #set($imageBlank = '/js/jquery-plugins/lightbox/images/lightbox-blank.gif')
+  #end
+
+  #if(!$UtilMethods.isSet($photoGalleryLightbox))
+    #set($photoGalleryLightbox = "/js/jquery-plugins/fancybox/jquery.fancybox-1.3.4.pack.js")
+  #end  
+  <script type="text/javascript" src="$photoGalleryLightbox "></script>
+  #if(!$UtilMethods.isSet($doNotIncludeCSS) || $doNotIncludeCSS == false)  
+    <link rel="stylesheet" type="text/css" href="/js/jquery-plugins/fancybox/jquery.fancybox-1.3.4.css" media="screen" />
+  #end
+  <div id="gallery">
+    <ul>
+      #foreach($imgId in $imageIds)
+        #set($imageTitle = $imageFilenames.get($imgIdCount))
+        <li>
+          <img src="/resize_image?maxh=$!{maxHeight}&maxw=$!{maxWidth}&id=$!{imgId}" alt="$!{imageTitle}" title="$!{imgFilename}"/>
+        </li>
+        
+        <li>
+          <a href="/thumbnail?id=${imgId}&amp;w=${photoWidth}&amp;h=${photoHeight}" title="$imageTitle" rel="gallery">
+            <img src="/thumbnail?id=${img.identifier}&amp;w=${thumbnailWidth}&amp;h=${thumbnailHeight}" alt="$imageTitle"/>
+          </a>           
+        </li>
+        #set($imgIdCount = $imgIdCount + 1)
+      #end
+    </ul>
+  </div>
+  
+
+  <div class="photoGalleriesIndex">
+    #set($countTmp = 0)
+    #foreach ($imgId in $imageIds)
+      #set($cssClass = "photoGalleryIndex")
+      #set($imageTitle = $imageFilenames.get($countTmp))
+      #if($velocityCount == $imageIds.size())
+        #set($cssClass = "photoGalleryIndex last")
+      #end
+
+      <div class="${cssClass}">
+        <a href="/thumbnail?id=$imgId&amp;crumbTitle=$imageTitle rel="$imageTitle">
+          <img src="/thumbnail?id=$imgId&amp;w=${thumbnailWidth}&amp;h=${thumbnailHeight}&amp;r=246&amp;g=243&amp;b=238" border="0" style="border: solid 1px #777777;"/>
+        </a>
+        #if($showSubgalleryTitle)<h2>$imageTitle($imageIds.size())</h2>#end
+      </div>
+      #set($countTmp = $countTmp + 1)
+    #end
+  </div>
+  
+  <script type="text/javascript">
+    $(function() {
+      $('#gallery a').fancybox();
+    
+      $("#gallery a").fancybox({
+        'type' : 'image',
+        'speedIn'    :  600, 
+        'speedOut'    :  200, 
+        'titlePosition'  : 'inside'
+      });
+    });
+  </script>
+
+#else
+	<div style="display: none;" class="news-article-photo-gallery-no-images">
+		No Image Ids - imageIds var size is 0
+	</div>
+#end

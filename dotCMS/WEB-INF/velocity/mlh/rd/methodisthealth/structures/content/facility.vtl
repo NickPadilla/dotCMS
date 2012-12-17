@@ -1,0 +1,185 @@
+#*
+additionalContentName
+additionalInformation
+address
+address2
+bodyText
+careersTab
+city
+description
+facilityLogo
+facilityType
+fax
+host1
+hours
+image
+keywords
+mapUrl
+methodist
+migrationInode
+mlhMods
+phone
+relatedPhysicians
+servicesOffered
+state
+tab2Content
+tab2Name
+tab3Content
+tab3Name
+title
+type1
+urlTitle
+website
+zip
+*#
+
+	<div class="facility-info span4">
+		<div class="facility-image">
+			<img src="/resize_image?path=$!{imageImageURI}&w=340" alt="$!{imageImageTitle}"  /> 
+			#if ($UtilMethods.isSet($facilityLogo))
+			<span class="facilityLogo"> 
+	        	<img src="$!{facilityLogoImageURI}" alt="$!{facilityLogoImageTitle}">
+	        <span>
+	        #end
+		</div>
+		<!-- /end facility-image -->
+		<div class="facility-specs">
+			#if ($UtilMethods.isSet($address))
+			<div class="facility-spec facility-address">
+				<span class="label">Address</span>
+				<span>
+					<span class="address">$address</span>
+					<span class="city">$city, $state $zip</span>
+				</span>
+			</div>
+			#end
+			#if ($UtilMethods.isSet($phone))
+			<div class="facility-spec facility-phone">
+				<span class="label">Phone</span>
+				<span class="phone">$phone</span>
+			</div>
+			#end
+			#if ($UtilMethods.isSet($hours))
+			<div class="facility-spec facility-hours">
+				<span class="label">Hours</span>
+				<span class="hours">$hours<span>
+			</div>
+			#end
+			#if ($UtilMethods.isSet($facilityUrl))
+			<div class="facility-spec facility-website">
+				<span class="label">Website</span>
+				<span class="website">
+					<a class="btn btn-large" href="$!{facilityUrl}">Visit Website</a>
+				</span>
+			</div>
+			#end
+		</div>
+		<!-- /end facility-detail -->
+	</div>
+	<!-- /end facility-info-->
+	
+	<div class="facility-details span8">
+		$description
+		<!-- /end description -->
+		
+		<div class="tabbable"> <!-- Only required for left/right tabs -->
+			<ul class="nav nav-tabs">
+				<li class="active"><a href="#tab1" data-toggle="tab">Description</a></li>
+				#if ($UtilMethods.isSet($servicesOffered))
+					<li><a href="#tab2" data-toggle="tab">Services</a></li>
+				#end
+				<li><a href="#tab3" data-toggle="tab">Map</a></li>
+				#if ($UtilMethods.isSet($tab2Name))
+					<li><a href="#tab4" data-toggle="tab">New Building</a></li>
+				#end
+				#if ($UtilMethods.isSet($tab3Name))
+					<li><a href="#tab5" data-toggle="tab">Tab3</a></li>
+				#end
+				#if ($UtilMethods.isSet($additionalContentName))
+					<li><a href="#tab6" data-toggle="tab">Additional Content</a></li>
+				#end
+				#if ($UtilMethods.isSet($careersTab))
+					<li><a href="#tab7" data-toggle="tab">Careers</a></li>
+				#end
+			</ul>
+			<!-- /end tab nav -->
+			
+			<div class="tab-content">
+				<div class="tab-pane active" id="tab1">
+					 $!{bodyText}
+				</div>
+				<!-- /end tab1 -->
+				
+				#if ($UtilMethods.isSet($servicesOffered)) 					    
+				<div class="tab-pane" id="tab2">
+					$servicesOffered
+				</div>
+				<!-- /end tab2 -->
+				#end
+				
+				<div class="tab-pane" id="tab3">
+					<div id="map_canvas" style="width: 500px; height: 400px"></div>
+					   <script src="http://maps.google.com/maps?file=api&v=2&key=ABQIAAAAeIALd2ckFyELbXM2qmrOnRSH_PulNm9vQ-D9n6Oy_6eLXSF7rxTUOvDyAyxspvgpitLVlXvKPJZRlg&sensor=false"type="text/javascript"></script>
+					       <script type="text/javascript">
+					
+					     	var map = new GMap2(document.getElementById("map_canvas"));
+							var address = "$!{address} $!{city} $!{zip}";
+					
+					  		ar geocoder =  new GClientGeocoder();
+					  
+							  geocoder.getLatLng(address, function(point) {
+							      if (!point) {
+							        alert(address + " not found");
+							      } else {
+							    setMapDisplay(point);
+							      }
+							    }
+							  );
+					
+					  		function setMapDisplay(point){
+					    
+					    	var marker = new GMarker(point);
+					    	map.setUIToDefault();
+					    	map.addOverlay(marker);
+					        map.setCenter(point, 15);					    		
+					  	}
+				
+					   </script>
+				</div>
+				<!-- /end tab3 -->
+				
+				#if ($UtilMethods.isSet($tab2Content)) 						    
+				<div class="tab-pane" id="tab4">
+					$tab2Content
+				</div>
+				<!-- /end tab4 -->
+				#end
+				
+				#if ($UtilMethods.isSet($tab3Content)) 	
+				<div class="tab-pane" id="tab5">
+					$tab3Content
+				</div>
+				<!-- /end tab5 -->
+				#end
+				
+				#if ($UtilMethods.isSet($additionalInformation)) 	
+				<div class="tab-pane" id="tab6">
+					$additionalInformation
+				</div>
+				<!-- /end tab6 -->
+				#end
+				
+				#if ($UtilMethods.isSet($careersTab)) 	
+				<div class="tab-pane" id="tab7">
+					$careersTab
+				</div>
+				<!-- /end tab7 -->
+				#end
+			</div>
+		</div>
+		<!-- /end location-detail-content -->
+		
+	</div 
+	<!-- /end facility-detail -->
+
+

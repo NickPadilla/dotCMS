@@ -1,0 +1,279 @@
+#############################################################################
+## Description: build/display a [Web Page Content + Course List]
+##
+## Preconditions: Expect ONLY 1 WebPageContent to be pulled from the folder specified.
+##      Expect at least 1 Course(Course) to be pulled from the folder specified.
+##
+##
+## ############ Variables ########################################################
+##
+## $displayTeaser - true/false
+## $displayThumbnail - true/false
+## $displaySectionImage - true/false
+## $maxCoursesToPull - maximum number of Courses to return when pulling content
+## $sortCourseListBy - value (from a select field) that is used to sort the Course list content pull.
+## $sortDirection - ascending/descending sort direction
+## $maxTeaserLength -
+## $folderWhereCoursesAreStored - host (OR) folder where WebPageContent and Course List will be pulled.
+## $usePagesCurrentFolder - 
+##    false: then use $folderWhereCoursesAreStored to pull the Course list
+##    true or empty: then use the widget's page's folder (currentFolder) to pull the Course list
+## 
+## $beginPublishDateRange - 
+## $endPublishDateRange - 
+## 
+#############################################################################
+
+#####################################################################
+## $urlPathAndPage (ex: '/home/examples/articles/index.dot')
+## Note: will always contain the page name in the path
+#####################################################################
+#set ($urlPathAndPage = "${UtilMethods.decodeURL($VTLSERVLET_URI)}")
+
+###########################################################
+## Get the folder path without the page name
+###########################################################
+#set($folderPath = $urlPathAndPage.substring(0, $urlPathAndPage.lastIndexOf('/')))
+
+#set($currentFolder = $folderAPI.findCurrentFolder($folderPath , $host))
+
+#set($wpc_courseSessionList_Errors = "")
+
+#if("$!{usePagesCurrentFolder}" != "false")
+  ## then use the widget's page's folder to pull the article listing
+  #if("$!{currentFolder}" != "")
+    #set($folderWhereCoursesAreStored  = $currentFolder.inode)
+  #else
+    #set($wpc_courseSessionList_Errors = "Error: currentFolder variable is empy or NULL<br/><br/>urlPathAndPage = $urlPathAndPage<br/>folderPath = $folderPath")
+  #end
+#end
+
+#if("$!{wpc_courseSessionList_Errors}" == "")
+  #########################################################
+  ## Pull WebPageContent on folder specified in $folderWhereArticlesAreStored
+  #########################################################
+  
+  #set($wpc_query = "+structureName:webPageContent")
+  #if($folderWhereCoursesAreStored == "SYSTEM_HOST")
+    #set($wpc_query = "$wpc_query +conhost:SYSTEM_HOST*")
+  #elseif($folderWhereCoursesAreStored != "")
+    #set($wpc_query = "$wpc_query +(conFolder:$!{folderWhereCoursesAreStored} conhost:$!{folderWhereCoursesAreStored})")
+  #end
+  
+  ##set($res = $dotlogger.error("**************** BEFORE Pulling webPageContent with ${wpc_query}"))
+  #set($wpcList = $dotcontent.pull("$!{wpc_query}", 1, "webPageContent.title desc"))
+  ##set($res = $dotlogger.error("**************** AFTER Pulling webPageContent with ${wpc_query}"))
+  #if("$!{wpcList}" != "" && $wpcList.size() > 0)
+    #set($wpc = $wpcList.get(0))
+    ##dotParse('//$!{SUBDOMAIN_PREFIX}.resources.org/application/content-display/fragments/wpc_display_fragment.vtl')
+	#parse('/mlh/global/content-display/fragments/WebPageContent_display.vtl')
+  #else
+    #set($wpc_courseSessionList_Errors = "$wpc_courseSessionList_Errors<br/>No webPageContent returned from query = $wpc_query")  
+  #end
+  
+  #set($courseSessionList_query = "+structureName:CourseSession")
+  #########################################################
+  ## Pull all Course Sessions on folder specified in $folderWhereArticlesAreStored
+  #########################################################
+
+  
+  #if($folderWhereCoursesAreStored == "SYSTEM_HOST")
+    #set($courseSessionList_query = "$courseSessionList_query +conhost:SYSTEM_HOST*")
+  #elseif($folderWhereCoursesAreStored != "")
+    #set($courseSessionList_query = "$courseSessionList_query +(conFolder:$!{folderWhereCoursesAreStored} conhost:$!{folderWhereCoursesAreStored})")
+  #end
+  
+  #set($courseSessionList_query="$courseSessionList_query +CourseSession.startDate:[$date.format('MM/dd/yyyy',$UtilMethods.now()) TO $date.format('MM/dd/yyyy',$UtilMethods.addDays($UtilMethods.now(), 366))]")
+  
+  
+  #set($sortQuery = "CourseSession.startDate asc")      
+  ##set($res = $dotlogger.error("**************** BEFORE Pulling articles with ${courseSessionList_query}"))
+  #set($courseSessionList = $dotcontent.pull("$!{courseSessionList_query}", 0, "$sortQuery"))
+  ##set($res = $dotlogger.error("**************** AFTER Pulling course with ${courseSessionList_query}"))
+  
+    #if($EDIT_MODE && $MLH_DEBUG == "true")
+    <div style="display: none;" class="article-list-query-info">
+      query = $courseSessionList_query<br/>
+    </div>
+  #end
+  
+    #if("$!{courseSessionList}" != "" && $courseSessionList.size() > 0)
+ 
+    ###################################
+    ## setup the column class name
+    ###################################
+
+    
+    #########################################################
+    ## Display Course Sessions 
+    #########################################################
+  
+
+<div id="sectionListing" class="ui-corner-all ui-helper-clearfix">  
+  ## check host
+  #if($host.hostname.contains("methodistmd.org"))
+     <table class="fancy">
+        <thead>
+        <tr>
+          <th width="50%">Conference/Course Name</th>
+          <th width="25%">Dates</th>
+      <th width="13%">Brochure</th>
+      <th width="12%">Register</th>
+          
+        </tr>
+        </thead>
+        <tbody>
+          #foreach($courseSession in $courseSessionList)
+          <tr >
+          <br/>
+          
+          #foreach($course in $dotcontent.pullRelated("Course-CourseSession","$courseSession.identifier",true,1))
+          #set( $courseObj = $course )
+          #end
+          
+      
+          <td>
+            <span class="className">$courseObj.courseTitle #editContentlet($courseSession.inode)</span>
+            
+          </td>        
+    
+          <td>
+            <span class="classStartDate">$date.format('M-d-yyyy', $courseSession.startDate)</span>
+            to 
+            <span class="classEndDate">$date.format('M-d-yyyy', $courseSession.endDate) </span>
+          </td>
+      <td><a class="classRegBtn" href="$courseSession.brochure.uri">Brochure</a> </td>
+      #if($courseSession.hasRegistration.selectValue=="true")
+        #if($courseSession.alternateRegistrationLink !="")
+        <td><a class="classRegBtn" href="$courseSession.alternateRegistrationLink">Register</a></td>
+        #else
+        <td><a class="classRegBtn" href="http://methodisthealth/apps/course-registration/?courseSesssionId=$courseSession.identifier&hostreplace=methodistmd">Register</a></td>
+        #end
+    #else
+      <td>&nbsp;</td>
+    #end
+          </tr>
+        #end
+        </tbody>
+      </table>
+  
+    
+  #elseif($host.hostname.contains("methodisthealth.org"))
+      
+  <script type="text/javascript" src="/global/js/jquery-plugins/jquery-quicksearch/jquery.quicksearch.js"></script>
+  
+  <script>
+  $(function() {
+
+    $('input#id_search').quicksearch('table#classListing tr', {
+    'delay': 100
+    
+  });
+
+
+  
+  });  
+  
+    
+     $("#dialog").dialog({ modal: true });
+  
+    $("a.description-link").live("click", function() {
+    
+    var someid =$(this).attr('id');
+
+      $(".classDescrCol").hide();
+    $("#showDescr-"+someid).show();
+      return false;
+  });
+
+</script>
+  
+      <div id="subFolderFilter" class="clearfix">
+    <form class="filterForm" action="#">
+    <input class="filterField" type="text" name="search" value="" id="id_search" placeholder="Filter Classes" size="25" />
+    <input class="filterButton" type="submit" alt="Go" value="Go">
+      </form>
+      </div>
+      
+      <table class="fancy" id="classListing">
+        <thead>
+        <tr>
+          <th width="25%">Class Name</th>
+          <th width="20%">Facility</th>
+          <th width="10%">Dates</th>
+          <th width="10%">Time</th>
+          <th width="10%">Register</th>
+        </tr>
+        </thead>
+        <tbody>
+          #foreach($courseSession in $courseSessionList )
+      #if($courseSession.currentRegistrantTotal < $courseSession.maxSessionSize)
+          <tr >
+         
+          #foreach($course in $dotcontent.pullRelated("Course-CourseSession","$courseSession.identifier",true,1))
+          #set( $courseObj = $course )
+          #end
+          
+          #foreach($facility in $dotcontent.pullRelated("Course-Facility","$courseObj.identifier",false,1))
+          #set( $facilityObj = $facility )
+          #end
+      
+          <td>
+            <span class="className"><a href="#" class="description-link"  id="$courseSession.identifier">$courseObj.courseTitle</a> #editContentlet($courseSession.inode)</span>
+      <span  style="display: none;" id="showDescr-$courseSession.identifier" class="classDescrCol">
+        <br/><br/>
+        #if($courseObj.courseLongDescription != "")
+          $courseObj.courseLongDescription
+        #else
+          No Description provided
+          
+        #end
+      </span>
+          </td>        
+          <td><span class="classLocation">$facilityObj.title</span></td>
+          <td>
+            <span class="classStartDate">$date.format('M-d-yyyy', $courseSession.startDate)</span>
+            to 
+            <span class="classEndDate">$date.format('M-d-yyyy', $courseSession.endDate)</span>
+          </td>
+          <td><span class="classStartTime">$courseSession.meetingTime</span></td>
+          <td><a class="classRegBtn" href="/apps/course-registration/?courseSessionId=$courseSession.identifier">Register</a></td>
+      
+      
+          </tr>
+      #end
+        #end
+        </tbody>
+      </table>
+  </div>
+      <div id="sectionListingBottom" class="ui-corner-bottom ui-helper-clearfix"></div>
+    <div id="modal-area">
+    <div class="content-div-full-width bio-details">
+    <span id="physician-bio-loading" style="display:none;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    </div>
+  ## end check host
+  #end
+  
+  
+    </div>
+  #else
+    #if($EDIT_MODE)
+      <div style="display: none;" class="no-articles-returned">
+        No course sessions returned.
+      </div>
+    #end
+  #end
+  
+#end
+
+####################################
+## Display any errors
+####################################
+#if("$!{wpc_courseSessionList_Errors}" != "")
+  ## show visible error if in edit mode
+  #if($EDIT_MODE)
+    $wpc_courseSessionList_Errors
+  #else
+    <div style="display: none;">$wpc_courseSessionList_Errors</div>
+  #end
+#end?

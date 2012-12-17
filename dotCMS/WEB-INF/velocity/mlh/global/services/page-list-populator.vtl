@@ -1,0 +1,36 @@
+#set($mainMap = $contents.getEmptyMap())
+#set($mainList = $contents.getEmptyList())
+
+
+#set($folderInode = $request.getParameter("folderInode"))
+
+#if("$!{folderInode}" != "")
+
+  #set($folderPath = $folderAPI.findURLPath($folderInode))
+
+  #set($pageList = $nav.getPagesList($folderPath, $request))
+  
+  #if($pageList && $pageList.size() > 0)
+    #foreach($page in $pageList)
+      #set($tempMap = $contents.getEmptyMap())
+      #set($res = $tempMap.put("pageInode", "$!{page.getInode()}"))
+      #set($res = $tempMap.put("pageUri", "$!{page.getURI()}"))
+      #set($res = $tempMap.put("pageUri", "$!{page.getURI()}"))
+      #set($res = $mainList.add($tempMap))
+    #end
+  #else
+    #set($res = $mainMap.put("error", "no pages returned for folderPath = ${folderPath}"))
+  #end
+
+#else
+  #set($res = $mainMap.put("error", "missing folderInode GET parameter"))
+#end
+
+#if($mainList && $mainList.size() > 0)
+  #set($tempMap = $contents.getEmptyMap())
+  #set($res = $tempMap.put("pageList", $mainList))
+  #set($res = $tempMap.put("parentFolderUri", $folderPath))
+  $json.generate($tempMap)
+#else  
+  $json.generate($mainMap)
+#end

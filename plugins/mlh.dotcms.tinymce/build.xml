@@ -1,0 +1,3 @@
+<project name="MLH TinyMCE Config Plugin" default="build">	
+	<import file="../common.xml"/>	
+</project>

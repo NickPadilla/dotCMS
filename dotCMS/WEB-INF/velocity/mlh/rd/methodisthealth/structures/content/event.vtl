@@ -1,0 +1,139 @@
+########### Variables of Eventmlh structure #############
+##
+## host1
+## category - Event Type
+## title
+## startDate
+## endDate
+## recurrance - true/false
+## description
+## location
+## image
+## file
+## tags
+## teaser - short version of description
+## cost
+## contact1 - relationship to "Contact" structure
+##
+##############################################
+  
+  ## if no existing URLMapContent/contentlet, then query/pull the first Eventmlh
+  #if(!$UtilMethods.isSet($request.getAttribute("com.dotmarketing.wiki.contentlet")))
+    #set($query = "+structureName:Eventmlh +(conhost:$host.identifier) +live:true")
+
+    #foreach($content in $dotcontent.pull($query, 1, "Eventmlh.startDate"))
+      #set($URLMapContent = $content)
+    #end
+  #end
+
+	<div id="event">
+		<div class="event-header">
+			<h1>$!{title}</h1>
+		</div>
+		<!-- /end event-header -->						
+		
+		<div class="row">
+		    #editContentlet($URLMapContent.inode)
+			<div class="event-glance span3">
+				#if("$!{imageImageURI}" != "")
+				<div class="event-image">
+					<img src="/resize_image?path=$!{imageImageURI}&w=240"/>
+				</div>
+				<!-- /end event-image -->
+				#end	
+									
+				#if("$!{startDate}" != "")
+				<div class="event-time event-start row">
+					<span class="event-label">
+						<i class="icon-time"> </i>
+						<h5>Starts</h5>
+					</span>
+					<span class="event-data">$date.format('EEE, MMM dd', $startDate)<br>$date.format('hh:mm:ss', $startDate)</span>
+				</div>
+				<!-- /end event-start-time -->
+				#end
+				
+				#if("$!{endDate}" != "")
+				<div class="event-time event-til row">
+					<span class="event-until">- Until -</span>
+				</div>
+				<!-- /end event-til -->
+				
+				<div class="event-time event-end row">
+					<span class="event-label">
+						<i class="icon-time"> </i>
+						<h5>Ends</h5>
+					</span>
+					<span class="event-data">$date.format('EEE, MMM dd', $endDate)<br>$date.format('hh:mm:ss', $endDate)</span>
+				</div>
+				<!-- /end event-end-time -->
+				#end 
+				
+				#if("$!{cost}" != "")
+				<div class="event-cost row">
+					<span class="event-label">
+						<i class="icon-tag"> </i>
+						<h5>Cost</h5>
+					</span>
+					<span class="event-data">$!{cost}</span>
+				</div>
+				<!-- /end event-contact-->
+				#end
+				
+				#if("$!{contact1}" != "")						
+				<div class="event-contact row">
+					<span class="event-label">
+						<i class="icon-envelope"> </i>
+						<h5>Contact</h5>
+					</span>
+					<span class="event-data">
+						#set($contacts = $dotcontent.pullRelated("Eventmlh-Contact", "$!{URLMapContent.identifier}", null, false, 0, null))
+						 <ul>
+			                #foreach($contact in $contacts)
+			                  <a href="mailto:$!{contact.email}">
+			                  <li>
+			                    $!{firstName}&nbsp;$!{lastName}
+			                    #if("$!{contact.email}" != "")
+			                      <br/>$!{email}
+			                    #end
+			                    #if("$!{contact.phone}" != "")
+			                      <br/>$!{phone}
+			                    #end
+			                  </li>
+			                  </a>
+			                #end
+              			</ul>	
+					</span>
+				</div>
+				<!-- /end event-contact-->
+				#end
+				
+				#if("$!{file}" != "")
+				<div class="event-file row">
+					<a class="eventFile btn" href="$!{file.uri}">Brochure</a>
+				</div>
+				<!-- /end event-file-->
+				#end
+				
+         		 #if("$!{pdfForm}" != "")
+				<div class="event-form row">
+              		<a class="eventForm btn" href="$!{pdfForm.uri}">Register</a>
+				</div>
+				<!-- /end event-form-->
+				#end
+			</div>
+			<!-- /end event-glance -->
+									
+			<div class="event-info span6">
+				<span class="event-desc">$!{description}<span>
+        		<span class="event-body">$!{bodyText}</span>						
+			</div>
+			<!-- /end event-info -->
+			
+		</div>
+		<!-- /end row -->
+	</div>
+	<!-- /end event -->
+
+
+

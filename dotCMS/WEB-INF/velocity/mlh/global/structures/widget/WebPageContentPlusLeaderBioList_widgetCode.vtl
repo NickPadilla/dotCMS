@@ -1,0 +1,185 @@
+#############################################################################
+## Description: build/display a [Web Page Content + Leadership Bio List]
+##
+## Preconditions: Expect ONLY 1 WebPageContent to be pulled from the folder specified.
+##      Expect at least 1 Leader Bio(LeadershipBio) to be pulled from the folder specified.
+##
+##
+## ############ Variables ########################################################
+##
+## $displaySectionImage - true/false
+## $sortLeadershipBioListBy - value (from a select field) that is used to sort the leadershipBio list content pull.
+## $sortDirection - ascending/descending sort direction
+## $displayJobTitle - 
+## $maxJobTitleLength - maximum number of characters to display in the job title of the each leadership bio listing
+## $folderWhereLeaderBiosAreStored - host (OR) folder where WebPageContent and Leadership Bio List will be pulled.
+## $usePagesCurrentFolder -
+##    false: then use $folderWhereLeaderBiosAreStored to pull the leadershipBio list
+##    true or empty: then use the widget's page's folder (currentFolder) to pull the leadershipBio list
+##
+## $beginPublishDateRange -
+## $endPublishDateRange -
+##
+#############################################################################
+
+#####################################################################
+## $urlPathAndPage (ex: '/home/examples/articles/index.dot')
+## Note: will always contain the page name in the path
+#####################################################################
+#set ($urlPathAndPage = "${UtilMethods.decodeURL($VTLSERVLET_URI)}")
+
+###########################################################
+## Get the folder path without the page name
+###########################################################
+#set($folderPath = $urlPathAndPage.substring(0, $urlPathAndPage.lastIndexOf('/')))
+
+#set($currentFolder = $folderAPI.findCurrentFolder($folderPath , $host))
+
+#set($wpc_leadershipBioList_Errors = "")
+#if("$!{usePagesCurrentFolder}" != "false")
+	## then use the widget's page's folder to pull the leadershipBio listing
+	#if("$!{currentFolder}" != "")
+		#set($folderWhereLeaderBiosAreStored  = $currentFolder.inode)
+	#else
+		#set($wpc_leadershipBioList_Errors = "Error: currentFolder variable is empy or NULL<br/><br/>urlPathAndPage = $urlPathAndPage<br/>folderPath = $folderPath")
+	#end
+#end
+
+#if("$!{wpc_leadershipBioList_Errors}" == "")
+
+  #########################################################
+  ## Pull WebPageContent on folder specified in $folderWhereLeaderBiosAreStored
+  #########################################################
+  
+  #set($wpc_query = "+structureName:webPageContent")
+  #if($folderWhereLeaderBiosAreStored == "SYSTEM_HOST")
+    #set($wpc_query = "$wpc_query +conhost:SYSTEM_HOST*")
+  #elseif($folderWhereLeaderBiosAreStored != "")
+    #set($wpc_query = "$wpc_query +(conFolder:$!{folderWhereLeaderBiosAreStored} conhost:$!{folderWhereLeaderBiosAreStored})")
+  #end
+  
+  #set($wpcList = $dotcontent.pull("$!{wpc_query}", 1, "webPageContent.title desc"))
+  #if("$!{wpcList}" != "" && $wpcList.size() > 0)
+    #set($wpc = $wpcList.get(0))
+    ##dotParse('//$!{SUBDOMAIN_PREFIX}.resources.org/application/content-display/fragments/wpc_display_fragment.vtl')
+	#parse('/mlh/global/content-display/fragments/WebPageContent_display.vtl')
+  #else
+    #set($wpc_leadershipBioList_Errors = "$wpc_leadershipBioList_Errors<br/>No webPageContent returned from query = $wpc_query")
+  #end
+  
+  
+  #########################################################
+  ## Pull all Articles on folder specified in $folderWhereLeaderBiosAreStored
+  #########################################################
+
+  #set($leadershipBioList_query = "+structureName:LeadershipBio")
+  #if($folderWhereLeaderBiosAreStored == "SYSTEM_HOST")
+    #set($leadershipBioList_query = "$leadershipBioList_query +conhost:SYSTEM_HOST*")
+  #elseif($folderWhereLeaderBiosAreStored != "")
+    #set($leadershipBioList_query = "$leadershipBioList_query +(conFolder:$!{folderWhereLeaderBiosAreStored} conhost:$!{folderWhereLeaderBiosAreStored})")
+  #end
+  
+  #set($sortQuery = "LeadershipBio.lastName desc")
+  #if("$!{sortLeadershipBioListBy}" != "")
+    #set($sortQuery = "LeadershipBio.${sortLeadershipBioListBy}")
+    #if("$!{sortDirection}" != "" && "$!{sortDirection}" == "desc")
+      #set($sortQuery = "LeadershipBio.${sortLeadershipBioListBy} desc")
+    #end
+  #end
+  
+  #set($leadershipBioList = $dotcontent.pull("$!{leadershipBioList_query}", 0, "$sortQuery"))
+  #if($EDIT_MODE && $MLH_DEBUG == "true")
+    <div style="display: none;" class="leadershipBio-list-query-info">
+      query = $leadershipBioList_query<br/>sortParam = $sortQuery<br/>sortLeadershipBioListBy = $sortLeadershipBioListBy
+    </div>
+  #end
+  
+  #if("$!{leadershipBioList}" != "" && $leadershipBioList.size() > 0)
+      
+    ###################################
+    ## setup the column class name
+    ###################################
+    #if($howManyColumns == 1)
+      #set($colGridClassName = "grid_12")
+    #elseif($howManyColumns == 2)
+      #set($colGridClassName = "grid_6")
+    #elseif($howManyColumns == 3)
+      #set($colGridClassName = "grid_4")
+    #elseif($howManyColumns == 4)
+      #set($colGridClassName = "grid_3")
+    #else
+      #set($howManyColumns = 2)
+      #set($colGridClassName = "grid_6")
+    #end
+
+    #set($firstColClassName = "alpha")
+    #set($lastColClassName = "omega")
+      
+    #########################################################
+    ## Display Article listing
+    #########################################################
+      
+    <div id="sectionListing" class="ui-corner-all ui-helper-clearfix">
+      <h3>$!{leadershipBioListTitle}</h3>
+      ##each item in this list contains a list, that list will populate each column
+      #set($columnLists = [])
+      
+      ## populate columnlists with empty lists that matches then number of $howManyColumns
+      #foreach($colCount in [1..$math.toInteger($howManyColumns)])
+        #set($added = $columnLists.add([]))
+      #end
+        
+      #set($leadershipBioCount = 0)
+      #foreach($leadershipBio in $leadershipBioList)
+        #set($colIndex = $math.mod($leadershipBioCount, $howManyColumns))
+        #set($added = $columnLists.get($colIndex).add($leadershipBio))
+        #set($leadershipBioCount = $leadershipBioCount + 1)
+      #end
+        
+      #set($columnCount = 0)
+      #set($columnSize = $columnLists.size())
+      #foreach($colList in $columnLists)
+        #set($columnCount = $columnCount + 1)
+    
+        #if($columnCount == 1)
+          #set($className = "$!{colGridClassName} alpha")
+        #elseif($columnCount == $columnSize)
+          #set($className = "$!{colGridClassName} omega")
+        #else
+          #set($className = "$!{colGridClassName}")
+        #end
+    
+        <div class="${className}" style="float: left;">
+          <ul>
+            #foreach($leadershipBioItem in $colList)
+              <li>#editContentlet($leadershipBioItem.inode)
+                <a href="/leadership-bio/$!{leadershipBioItem.urlTitle}">
+                  <h4><span class="headline">$leadershipBioItem.lastName, $leadershipBioItem.firstName</span></h4>
+                  #if("$!{displayJobTitle}" != "false")
+                    #if("$!{maxTeaserLength}" == "")
+                      #set($maxJobTitleLength = "200")
+                    #end
+                    <span class="teaser"><p>$UtilMethods.prettyShortenString($!leadershipBioItem.jobTitle, $math.toInteger($maxJobTitleLength))</p></span>
+                  #end
+                </a>
+              </li>
+            #end
+          </ul>
+        </div>
+      #end
+    </div>
+  #end
+#end 
+## ending of "$!{wpc_leadershipBioList_Errors}" == ""
+  
+####################################
+## Display any errors
+####################################
+#if("$!{wpc_leadershipBioList_Errors}" != "")
+  ## show visible error if in edit mode
+  #if($EDIT_MODE)
+    $wpc_leadershipBioList_Errors
+  #else
+    <div style="display: none;">$wpc_leadershipBioList_Errors</div>
+  #end
+#end

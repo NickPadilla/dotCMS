@@ -1,0 +1,9 @@
+#set($subdomain_init = ${host.hostName.split("\.").get(0)})
+#if($subdomain_init == "www" || $subdomain_init == "mlh")
+    #set($SUBDOMAIN_PREFIX = "wsprod")
+#else
+    #set($SUBDOMAIN_PREFIX = ($host.hostName.split("\.").get(0)))
+#end
+
+#set($MLH_DEBUG = "true")
+#set($MLH_LEFT_NAV_CONTENT_AS_LINK = "false")

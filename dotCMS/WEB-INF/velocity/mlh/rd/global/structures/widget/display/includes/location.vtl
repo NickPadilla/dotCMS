@@ -1,0 +1,71 @@
+#set($query="+structureName:Facility +(conhost:$host.identifier conhost:SYSTEM_HOST)")
+#set($facilityContentMap=$dotcontent.pull($query,0,"Facility.type1"))
+
+#macro(facilityInstanceMarkup $con)
+		
+		#set($pageListMap = $conApi.getContentletReferences($conApi.find($con.inode, $mlhDotCmsUser, false), $mlhDotCmsUser, false))
+		#set($uri= "")
+
+		
+		## start span
+		<div class="span4 facility">
+			#if("$!{pageListMap}" != "" && $pageListMap.size() > 0)
+			#set($uri= $pageListMap.get(0).get("page").getURI())
+			#else
+				<div class="alert">
+				  <button type="button" class="close" data-dismiss="alert">&times;</button>
+				  <strong>Warning!</strong> this content is not linked to a page.
+				</div>			
+			#end
+			##image
+			<span class="facility-image">
+				<img src="/resize_image?path=/dotAsset/$con.image.uri&w=340&h=300">
+			</span>
+			## facility name
+			<span class="facility-name"><h3><a href="${uri}">$con.title</a></h3></span>
+			## start faciliy row details
+			<div class="row">
+				## get directions button
+				<div class="facility-services pull-right"><a href="${uri}" class="btn">More</a></div>
+				## start faciliy details
+				<div class="facility-details span3">
+					<span class="facility-street">$con.address</span>
+					<span class="facility-city">$con.city, $con.state.selectValue $con.zip</span>
+					<span class="facility-phone">$con.phone</span>
+				## end faciliy details
+				</div>
+				
+			## end faciliy row details
+			</div>
+		## end span
+		</div>
+#end
+
+#macro(facilityMarkup $sectionId $sectionNumber $sectionHeaderText $selectValue)
+	<section id="$sectionId" class="$sectionNumber">
+	## Facility Type goes into ID ##
+	<div class="section-header">
+		<h2>$sectionHeaderText</h2>
+		## Facility Type Name ##
+	</div>
+	<!-- /end section-header -->
+	<div class="row">
+		#foreach($con in $facilityContentMap)
+			#if($con.type1.selectValue=="$selectValue")
+				#facilityInstanceMarkup($con)
+			#end
+		#end
+	</div>
+	</section>	
+#end
+
+#facilityMarkup("Hospitals" "section-first" "Hospitals" "Hospital")
+#facilityMarkup("Wound-Healing-Centers" "section-second" "Wound Healing Center" "Wound Healing Center")
+#facilityMarkup("Sleep-Centers" "section-third" "Sleep Centers" "Sleep Disorder Center")
+#facilityMarkup("Physician-Practices" "section-fourth" "Physician Practices" "myMD Clinics")
+#facilityMarkup("Specialists" "section-fifth" "Specialists" "Specialists")
+#facilityMarkup("Minor-Medical-Centers" "section-sixth" "Minor Medical Centers" "Minor Medical Center")
+#facilityMarkup("Surgery-Centers" "section-seventh" "Surgery Centers" "Surgery Center")
+#facilityMarkup("Diagnostic-Centers" "section-eigth" "Diagnostic Centers" "Diagnostic Centers")
+#facilityMarkup("Cancer-Treatment-Centers" "section-ninth" "Cancer Treatment Centers" "Cancer Treatment Centers")
+#facilityMarkup("Hospice" "section-tenth" "Hospice" "Hospice")

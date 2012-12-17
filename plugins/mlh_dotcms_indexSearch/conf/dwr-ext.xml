@@ -1,0 +1,8 @@
+	
+	<!-- This is the value actually used -->
+	<create creator="new" javascript="BrowserAjax" scope="session">
+	  <param name="class" value="com.dotmarketing.plugins.mlh.websitebrowser.OverrideBrowserAjax" />
+	</create>
+	
+
+

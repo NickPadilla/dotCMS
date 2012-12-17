@@ -1,0 +1,30 @@
+############################
+## sets the global MLH variables
+############################
+
+#set($subdomain_init = ${host.hostName.split("\.").get(0)})
+#if($subdomain_init == "www" || $subdomain_init == "mlh")
+    #set($subdomain_init = "wsprod")
+#end
+
+#set($MLH_DEBUG = "true")
+#set($MLH_LEFT_NAV_CONTENT_AS_LINK = "false")
+
+#parse('/mlh/global/mlh_global_variables.vtl')
+
+#if("$!{URLMapContent.host1}" != "")
+    #set($contentDetailPath = $folderAPI.findURLPath("$!{URLMapContent.host1.inode}"))
+    
+    #if("$!{contentDetailPath}" != "")
+      #set($contentDetailPath = "${contentDetailPath}index.dot")
+      #set($res = $request.setAttribute("mlh_content_detail_path", "${contentDetailPath}"))
+    #end
+#end
+
+##################################
+## inlude all necessary macros
+##################################
+#parse('/mlh/global/navigation/navigation_mlh_macro.vtl')   
+#parse('/mlh/global/navigation/getStartingFolderLevel_macro.vtl')  
+#parse('/mlh/global/utils/fileSizeFormatter_macro.vtl')
+

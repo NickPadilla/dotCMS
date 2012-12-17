@@ -1,0 +1,22 @@
+## fileSizeOutput will be set after the call to fileSizeFormatter
+#macro(fileSizeFormatter $fileIdentifier)
+  
+  #set($fileSizeOutput = "")
+  
+  #set($file = $webapi.getLiveFileAsset($fileIdentifier))
+  #set($fileSizeStr = "$!{file.size}")
+  #set($fileSizeNum = $math.toInteger($fileSizeStr))
+  
+  #set($displayAsKB = ($fileSizeNum >= 1024 && $fileSizeNum < 1048576))
+  #set($displayAsMB = ($fileSizeNum >= 1048576))
+
+  #if($displayAsKB)
+    #set($divDown = $math.roundTo(2, $math.div($fileSizeNum, 1024)))
+    #set($fileSizeOutput = "$!{divDown}(KB)")
+  #elseif($displayAsMB)
+    #set($divDown = $math.roundTo(2, $math.div($fileSizeNum, 1048576)))
+    #set($fileSizeOutput = "$!{divDown}(MB)")
+  #else
+    #set($fileSizeOutput = "${fileSizeNum}(Bytes)")
+  #end
+#end

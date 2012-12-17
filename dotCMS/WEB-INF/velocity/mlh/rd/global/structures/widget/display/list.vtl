@@ -1,0 +1,134 @@
+#set($conApi = $contents.getContentletAPI())
+#set($query = "")
+#foreach($catInode in $listWidget)
+	#set($query = "categories:$categories.getCategoryByInode($catInode).getCategoryName()")
+#end
+<div class="span$widthspan">
+	<div class="widget $customClass">
+		#if($listTheme=="articleListWithImage")
+			<ul class="story-list">
+				##OPTION - how many stories to pull (numberOfItemsToShow)
+				#foreach($con in $dotcontent.pull("+structureName:NewsArticle +live:true +($query)",$numberOfItemsToShow,"modDate desc"))
+						<li>
+						#set($pageListMap = $conApi.getContentletReferences($conApi.find($con.inode, $mlhDotCmsUser, false), $mlhDotCmsUser, false))
+						#set($uri= "")
+						#if("$!{pageListMap}" != "" && $pageListMap.size() > 0)
+							#set($uri= $pageListMap.get(0).get("page").getURI())
+						#else
+							<h1>this content is not linked to a page</h1>					
+						#end
+						##OPTION - show story thumbnail  (showStoryThumbnail)
+						#if($showStoryThumbnail != "false" &&  $UtilMethods.isSet($con.featuredImage))
+						<div class="story-info">
+							<a href="$uri" class="thumbnail story-thumb">
+							      
+							      <img src="/resize_image?path=${con.featuredImage.uri}&w=135">
+							</a>
+						</div>
+						##OPTION if no thumbnail - replace "story-details-thumb" with "story-details"
+						<div class="story-details-thumb">
+						#else
+						<div class="story-details">
+						#end
+							<a href="$uri"><h3 class="story-headline">$con.headline</h3></a>
+							<span class="story-teaser">
+								$con.teaser
+								
+							</span>
+						</div>	
+					</li>
+				#end
+			</ul>
+		#elseif($listTheme=="blogList")
+			## widthspan needs to be seperated between the two sides - i.e. 4 / 4
+			<ul class="blog-list blog-feature">	
+				## pulls the first blog story
+				##OPTION - how many stories to pull (numberOfItemsToShow)
+				#foreach($con in $dotcontent.pull("+structureName:Blogentry +live:true +($query)",$numberOfItemsToShow,"modDate desc"))
+				<li>
+					#set($pageListMap = $conApi.getContentletReferences($conApi.find($con.inode, $mlhDotCmsUser, false), $mlhDotCmsUser, false))
+					#set($uri= "")
+					#if("$!{pageListMap}" != "" && $pageListMap.size() > 0)
+						#set($uri= $pageListMap.get(0).get("page").getURI())
+					#else
+						<h1>this content is not linked to a page</h1>					
+					#end
+					<div class="blog-entry">
+						<a href="$uri"><h3 class="blog-headline">Headline Here</h3></a>
+						<span class="blog-teaser">
+						Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sed adipiscing nisl. Aliquam semper, libero a lacinia posuere, magna ligula ultricies mauris, et tempor mauris ante sed felis. Suspendisse justo tortor, auctor a ultricies a, molestie in tellus.
+						</span>
+					</div>	
+				</li>
+				#end
+			</ul>
+			<ul class="blog-list blog-roll">
+				## start loop through folder to retrieve the blog content
+				##OPTION - how many stories to pull (numberOfBlogStories). this is a whole number
+				<li>
+					<div class="blog-entry">
+						<h3 class="blog-headline">Headline Here</h3>
+					</div>	
+				</li>
+			</ul>
+			
+		#elseif($listTheme=="eventList")
+			<ul class="event-list">
+				#foreach($con in $dotcontent.pull("+structureName:Eventmlh +live:true +($query)",$numberOfItemsToShow,"modDate desc"))
+					<li>
+						#set($pageListMap = $conApi.getContentletReferences($conApi.find($con.inode, $mlhDotCmsUser, false), $mlhDotCmsUser, false))
+						#set($uri= "")
+						#if("$!{pageListMap}" != "" && $pageListMap.size() > 0)
+							#set($uri= $pageListMap.get(0).get("page").getURI())
+						#else
+							<h1>this content is not linked to a page</h1>					
+						#end
+						##OPTION - To show event calendar box (showEventCalendarBox)
+						#if($showStoryThumbnail != "false")
+						<div class="event-info">
+							<span class="event-date">
+								<span class="event-month">$date.format("MMM",$con.startDate)</span>
+								<span class="event-day">$date.format("d",$con.startDate)</span>
+							</span>
+						</div>
+						#end
+						<div class="event-details">
+							<a href="$uri"><h2 class="event-headline">$con.title</h2></a>
+							<span class="event-teaser">
+								$con.teaser 
+							</span>
+						</div>	
+					</li>
+				#end
+			</ul>
+		#elseif($listTheme=="audioPlayer")
+		
+			#foreach($con in $dotcontent.pull("+structureName:NewsArticle +live:true +($query)",$numberOfItemsToShow,"modDate desc"))
+				#set($pageListMap = $conApi.getContentletReferences($conApi.find($con.inode, $mlhDotCmsUser, false), $mlhDotCmsUser, false))
+				#set($uri= "")
+				#if("$!{pageListMap}" != "" && $pageListMap.size() > 0)
+					#set($uri= $pageListMap.get(0).get("page").getURI())
+				#else
+					<h1>this content is not linked to a page</h1>					
+				#end
+				
+				
+					<div class="widget-wait"></div>
+					   <span class="icon-audio"></span>
+					   <span class="btn pull-right"><a href="">More</a></span>
+					   <span class="widget-title">$widgetTitle</span>
+					   <div class="audio-title">$con.headline</div>
+					   	<div class="audio-player">
+					     <object type="application/x-shockwave-flash" name="audioplayer_$con.inode" style="outline: none" data="/meth-rd/js/lib/player.swf" width="200" height="24" id="audioplayer_$con.inode"><param name="bgcolor" value="#FFFFFF">
+					       <param name="wmode" value="transparent">
+					       <param name="menu" value="false">
+					       <param name="flashvars" value="soundFile=$con.audioFile1.uri&amp;titles=$con.headline&amp;playerID=audioplayer_$con.inode">
+						</object>
+					</div>
+			#end
+		#elseif($listTheme=="location")
+			#parse('/mlh/rd/global/structures/widget/display/includes/location.vtl')
+		#end
+		
+	</div>
+</div>

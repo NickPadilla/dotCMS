@@ -1,0 +1,43 @@
+#if("$!{content}" == "")
+
+	##sectionHeader
+	<div id="sectionHeaderBackground">
+		    	<div id="sectionHeader" class="container">
+		      <div class="row">
+		        <div class="span12">
+		          <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+		          <a class="btn sp-section-nav-btn pull-right hidden-desktop" data-toggle="collapse" data-target=".section-collapse">
+		            <i class="icon-chevron-down"></i>
+		          </a>
+		          
+		          <div id="breadcrumbs" class="">
+		         	#crumbTrail()
+		          </div>
+		          <!-- /end breadcrubms -->
+		    	</div>
+			</div>
+		</div>
+		<!-- /end sectionHeader -->
+	</div>
+	<!-- /end sectionHeaderBackground -->
+	
+	<div id="pageHeaderBackground">
+		<div id="pageHeader" class="container">
+			<div class="main-start row">
+				<div id="sectionNav" class="span12 section-collapse collapse hidden-desktop">
+					#mlhnavigation(2,5)			 
+				</div>
+				<!-- /end sectionNav -->
+				
+				<div id="pageTitle" class="span12"></div>
+			</div>
+			
+		</div>
+		<!-- /end pageHeader -->
+	</div>
+	<!-- /end pageHeaderBackground -->
+	
+#else
+	$content
+#end
+

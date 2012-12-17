@@ -1,0 +1,4 @@
+<filter>
+	<filter-name>URLMapFilter</filter-name>
+	<filter-class>org.mlh.dotcms.override.filters.URLMapFilter</filter-class>
+</filter>

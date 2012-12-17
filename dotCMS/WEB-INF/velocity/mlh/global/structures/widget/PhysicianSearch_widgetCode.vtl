@@ -1,0 +1,254 @@
+#############################################################################
+## Description: physician search
+## ############ Variables ########################################################
+##
+## $displaySectionImage - true/false
+##
+#############################################################################
+
+<script type="text/javascript" src="/global/js/jquery-plugins/jquery-quicksearch/jquery.quicksearch.js"></script>
+<script type="text/javascript">
+
+## these need to be the value of the Physician Type Value fields - just in the order they need to display
+## this is because velocity doesn't give access to a TreeMap; if we could use that this would be cleaner.
+#set($phyCategoryOrder = ["full","nursepractitioner","limited"])
+#set($phyCategories = $contents.getEmptyMap())
+#set($dummy = $phyCategories.put("full","Le Bonheur Physicians"))
+#set($dummy = $phyCategories.put("nursepractitioner","Le Bonheur Nurse Practitioners"))
+#set($dummy = $phyCategories.put("limited","Le Bonheur Community Physicians"))
+
+$(document).ready(function(){
+	var initialzed = "false";
+	var categories = '$phyCategoryOrder';
+	var shownCategories = [];
+	var hiddenCategories = [];
+
+	$(".speciality-name").click(function(e){
+		e.preventDefault();
+
+		//clear out the "Name" search
+		$("input#physician-name").val("");
+		$("input#physician-specialty").val("");
+		$("input#physician-specialty").val($(this).attr("id"));
+		$("input#physician-specialty").trigger("performSearch");
+		
+		// in the trigger we de-select the previous selection - so that it is uniform through out - now we select the current one.
+		$(this).closest("li").addClass('selected');
+
+		return false;
+	});
+
+	$("#physician-first-letter-last-name a").click(function(e){
+		e.preventDefault();
+
+		//clear out the "Name" search
+		$("input#physician-name").val("");
+		$("input#letter-selected").val("");
+		$("input#letter-selected").val($(this).text());
+		$("input#letter-selected").trigger("performSearch");
+		
+		// in the trigger we de-select the previous selection - so that it is uniform through out - now we select the current one.
+		$(this).parents('li').addClass('selected');
+
+		return false;
+	});
+
+	//initialize the modal for the bioDetails copied into the modal-area
+	var bioModal = $('#modal-area .bio-details').dialog({
+		height: 600, width: 870,
+		modal: true,
+		autoOpen: false,
+		dialogClass: 'physician-bio-modal'
+	});
+
+	function addQuickSearches(){
+		var cats = categories.split(',');
+		for(var i = 0; i < cats.length; i++){
+			var cat = cats[i];
+			cat = cat.replace('[','');
+			cat = jQuery.trim(cat.replace(']',''));
+			addIndividualQS(cat,"physician-name",".name-link",true,{});
+			addIndividualQS(cat,"letter-selected","span.first-letter-last-name",false,{bind:"performSearch"});
+			addIndividualQS(cat,"physician-specialty","td:last",false,
+			{
+				bind:"performSearch",
+				prepareQuery: function (val) {
+					return val.toLowerCase();
+				},
+				testQuery: function (query, txt, _row) {
+					return query == txt;
+				}
+			});
+		}
+	}
+	
+	function addIndividualQS(cat,inputId,selector,checkPhysicianNameInput,options){
+		if(options == null){
+			options = {};
+		}
+		var general = {
+			selector: selector,
+			stripeRows: ["even","odd"],
+			afterResults:  function() {			
+				if (initialzed == "true"){
+					// quick search sets this field to display when no records are found
+					// so we will leverage this to do a check for limited categories 
+					// we will not show them if there is no data for them.
+					if($(this).quicksearch.getNumberOfMatchedResults() != 0){
+						if(!checkPhysicianNameInput || (checkPhysicianNameInput && $("input#physician-name").val()!="")){
+							$("."+cat+"-profile-header").show();
+							$("table#"+cat+"-profile").fadeIn("fast");
+						}
+						shownCategories.push(cat);
+					}else{
+						hiddenCategories.push(cat);
+					}
+					
+					// here we will check to see if we have the last category - if so we 
+					// check to see if we have any results - if not we will show the No Results Div
+					if((shownCategories.length+hiddenCategories.length) == categories.split(',').length){
+						if(shownCategories.length == 0){
+							// no cats are showing
+							$('#noResultsFound').show();
+						}
+						shownCategories = [];
+						hiddenCategories = [];
+					}
+				}
+			},
+			onBefore: function() {
+				// when this gets clicked we need to ensure we unselect, if selected, the speciality.
+				$("#sectionListing ul li.selected").removeClass("selected");
+		
+				// ensure we clear everything 
+				$('#noResultsFound').hide();
+				$("."+cat+"-profile-header").hide();
+				$("#"+cat+"-profile").hide();
+			}
+		};
+		var combined = jQuery.extend({}, general, options);
+		$("input#"+inputId).quicksearch("table#"+cat+"-profile tbody tr", combined);
+	}
+	addQuickSearches();
+
+	$("table .name-link").live("click", function() {
+		$("#physician-bio-loading").html('<img src="/global/images/ajax-loader.gif"/>');
+		bioModal.dialog("open");
+		$("#physician-bio-loading").show();
+
+		${esc.d}.get("/application/detail-pages/physician-detail-ajax.dot?host_id=15e88f9e-60ce-4c34-adff-f01651e87869&physicianIdentifier="+$(this).attr("id"), function(data) {                  
+			$("#physician-bio-loading").html(data);               
+		});
+		return false;
+	});
+
+	//set initialized here so that the quicksearch onAfter events function correctly
+	initialzed = "true";
+	
+	if (window.location.hash) {
+		//url decode the hashtag value so we can manually click the correct category...and then scroll to top
+		var hashVal = decodeURIComponent(window.location.hash);
+		$('a[href="' + hashVal + '"]').click();
+		if (jQuery.browser.msie) {
+			setTimeout(function(){
+				$("html").scrollTop(100);
+			}, 200);
+		} else if (jQuery.browser.safari) {
+			setTimeout(function(){
+				$("body").scrollTop(100);
+			}, 100);
+		} else {
+			$("html,body").scrollTop(100);
+		}
+	}	
+});
+</script>
+<div id="sectionListingTop" class="ui-corner-top ui-helper-clearfix"></div>
+<div id="sectionListing" class="ui-helper-clearfix">
+  <div class="grid_4 alpha">
+    ## caching this beause it does mucho querying
+    ##dotcache("${host.inode}-physicianSearch",60)
+    #set($categoryList = $categories.getActiveChildrenCategoriesOrderByName($categories.getCategoryByKey("physpecialty")))
+    <ul>
+      #foreach($category in $categoryList)
+          <li>
+            <a href="#$category.categoryName" class="speciality-name" id="$category.categoryName">$category.categoryName</a><span class="specialist-count"> ($dotcontent.count("+structureName:Physician +(categories:$category.categoryVelocityVarName)")) </span>
+          </li>
+      #end
+    </ul>
+    ##end
+  </div>
+  ## end search tool box
+  <div class="grid_8 omega">
+    <h4>Name</h4>
+              
+    <input type="text" id="physician-name" value=" Physician Name">
+    <input type="hidden" id="physician-specialty" value="">
+    <input type="hidden" id="letter-selected" value="">
+    
+    <span id="search-loading" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    
+    <h4 class="first-letter">First letter of last name</h4>
+    
+    <ul id="physician-first-letter-last-name" class="clearfix">
+      <li><a href="#">A</a></li>
+      <li><a href="#">B</a></li>
+      <li><a href="#">C</a></li>
+      <li><a href="#">D</a></li>
+      <li><a href="#">E</a></li>
+      <li><a href="#">F</a></li>
+      <li><a href="#">G</a></li>
+      <li><a href="#">H</a></li>
+      <li><a href="#">I</a></li>
+      <li><a href="#">J</a></li>
+      <li><a href="#">K</a></li>
+      <li><a href="#">L</a></li>
+      <li><a href="#">M</a></li>
+      <li><a href="#">N</a></li>
+      <li><a href="#">O</a></li>
+      <li><a href="#">P</a></li>
+      <li><a href="#">Q</a></li>
+      <li><a href="#">R</a></li>
+      <li><a href="#">S</a></li>
+      <li><a href="#">T</a></li>
+      <li><a href="#">U</a></li>
+      <li><a href="#">V</a></li>
+      <li><a href="#">W</a></li>
+      <li><a href="#">X</a></li>
+      <li><a href="#">Y</a></li>
+      <li><a href="#">Z</a></li>
+    </ul>
+    
+	#foreach($cat in $phyCategoryOrder)
+    <h4 class="${cat}-profile-header" style="display:none;" >${phyCategories.get($cat)}</h4>
+    <table id="${cat}-profile" style="display:none;" class="fancy phySearch">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Specialty</th>
+        </tr>
+      </thead>
+      <tbody>
+        #foreach($physician in $dotcontent.pull("+structureName:Physician +(conhost:$!{host.identifier} conhost:SYSTEM_HOST)  +working:true +Physician.type1:*${cat}*",500,"Physician.lastName asc"))
+            <tr >
+              <td class="phyName">
+                <a href="" id="$physician.identifier"  class="name-link">$physician.firstName $physician.lastName #if($physician.suffix != "") , $physician.suffix #end  #if($physician.medicalDegree != "") , $physician.medicalDegree#end </a>
+                <span  class="first-letter-last-name" style="display:none">$physician.lastName.substring(0, 1)</span>
+              </td>
+              <td class="phySpecialty">$physician.specialty.get(0).categoryName</td>
+            </tr>
+        #end
+      </tbody>
+    </table>    
+    #end
+    <div id="noResultsFound" class="noResultsFound" style="display:none;">No Results Found</div>
+  </div>
+  ## end search results
+</div>
+## end sectionListing
+<div id="sectionListingBottom" class="ui-corner-bottom ui-helper-clearfix"></div>
+<div id="modal-area">
+  <div class="content-div-full-width bio-details">
+    <span id="physician-bio-loading" style="display:none;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+  </div>
+</div>
