@@ -6,6 +6,8 @@ bin/*.sh
 .classpath
 .settings/*
 .project
+**/.svn/
+**/.svn/*
 tomcat/work
 tomcat/logs
 tomcat/temp
